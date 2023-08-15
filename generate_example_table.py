@@ -70,7 +70,7 @@ def generate_example_table():
                 if lang == "cs" and "Legacy .NET API" in readme:
                     row += "   |"
                 elif lang in languages:
-                    row += " ✓ |"
+                    row += f" [{lang}]({directory_name}/{lang}) |"
                 else:
                     row += "   |"
         row += "\n"
