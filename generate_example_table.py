@@ -67,10 +67,17 @@ def generate_example_table():
         else:
             row = f"| [{example_name}]({directory_name}) | {description} |"
             for lang in LANGS:
-                if lang == "cs" and "Legacy .NET API" in readme:
-                    row += "   |"
-                elif lang in languages:
-                    row += f" [{lang}]({directory_name}/{lang}) |"
+                if lang in languages:
+                    if lang == "cs":
+                        cs_readme = os.path.join(example, "cs", "README.md")
+                        with open(cs_readme, "r") as f:
+                            readme = f.read(200)
+                            if "Legacy .NET" in readme:
+                                row += "   |"
+                            else:
+                                row += f" [{lang}]({directory_name}/{lang}) |"
+                    else:
+                        row += f" [{lang}]({directory_name}/{lang}) |"
                 else:
                     row += "   |"
         row += "\n"
