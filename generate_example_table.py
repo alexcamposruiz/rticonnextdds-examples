@@ -61,7 +61,7 @@ def generate_example_table():
         # Add row to table
         if not any(lang in languages for lang in LANGS):
             # The directory likely contains subdirectories with examples in them
-            row = f"| [{directory_name}]({directory_name}) | {description} | (see subdirectories) |"
+            row = f"| [{directory_name}]({directory_name}) | {description} |  |"
         else:
             row = f"| [{directory_name}]({directory_name}) | {description} |"
             for lang in LANGS:
