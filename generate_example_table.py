@@ -14,7 +14,7 @@ LANGS = ["c", "c++98", "c++11", "py", "java", "cs"]
 
 def generate_example_table():
     # Initialize table headers
-    table = "| Example | Description | C | C++98 | C++11 | Python | Java | C# |\n"
+    table = "| Example | Description | C | C++ 98 | C++ 11 | Python | Java | C# |\n"
     table += "| ------- | ----------- | - | ----- | ----- | ------ | ---- | -- |\n"
 
     # Find all example directories
@@ -49,6 +49,8 @@ def generate_example_table():
         # Extract directory name
         directory_name = os.path.basename(example)
 
+        example_name = directory_name.replace('_', ' ')
+
         # Create link to directory
         directory_link = f"[(...)]({directory_name})"
 
@@ -61,9 +63,9 @@ def generate_example_table():
         # Add row to table
         if not any(lang in languages for lang in LANGS):
             # The directory likely contains subdirectories with examples in them
-            row = f"| [{directory_name}]({directory_name}) | {description} |  |"
+            row = f"| [{example_name}]({directory_name}) | {description} |  |"
         else:
-            row = f"| [{directory_name}]({directory_name}) | {description} |"
+            row = f"| [{example_name}]({directory_name}) | {description} |"
             for lang in LANGS:
                 if lang == "cs" and "Legacy .NET API" in readme:
                     row += "   |"
