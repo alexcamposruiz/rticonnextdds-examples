@@ -23,7 +23,9 @@ int main(int argc, char **argv)
     dds::topic::Topic<DeviceStatus> topic(participant, "WindowStatus");
     dds::core::StringSeq parameters(1, "'LivingRoom'");
     dds::topic::ContentFilteredTopic<DeviceStatus> content_filtered_topic(
-        topic, "cft", dds::topic::Filter("is_open = true and room_name = %0", parameters));
+            topic,
+            "cft",
+            dds::topic::Filter("is_open = true and room_name = %0", parameters));
     dds::sub::DataReader<DeviceStatus> reader(content_filtered_topic);
 
     parameters[0] = "'Kitchen'";

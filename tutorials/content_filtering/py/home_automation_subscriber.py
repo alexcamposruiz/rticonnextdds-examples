@@ -20,7 +20,7 @@ async def sensor_monitoring():
     content_filtered_topic = dds.ContentFilteredTopic(
         topic,
         "FilterRoomAndOpenWindows",
-        dds.Filter("is_open = true and room_name = 'LivingRoom'")
+        dds.Filter("is_open = true and room_name = 'LivingRoom'"),
     )
     reader = dds.DataReader(content_filtered_topic)
 

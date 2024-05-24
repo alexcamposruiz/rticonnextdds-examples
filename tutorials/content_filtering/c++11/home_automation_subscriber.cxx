@@ -22,7 +22,9 @@ int main(int argc, char **argv)
     dds::domain::DomainParticipant participant(0);
     dds::topic::Topic<DeviceStatus> topic(participant, "WindowStatus");
     dds::topic::ContentFilteredTopic<DeviceStatus> content_filtered_topic(
-        topic, "cft", dds::topic::Filter("is_open = true and room_name = 'LivingRoom'"));
+            topic,
+            "cft",
+            dds::topic::Filter("is_open = true and room_name = 'LivingRoom'"));
     dds::sub::DataReader<DeviceStatus> reader(content_filtered_topic);
 
     rti::sub::SampleProcessor sample_processor;
