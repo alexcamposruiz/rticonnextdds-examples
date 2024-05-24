@@ -23,7 +23,7 @@ int main(int argc, char **argv)
     dds::topic::Topic<DeviceStatus> topic(participant, "WindowStatus");
     dds::topic::ContentFilteredTopic<DeviceStatus> content_filtered_topic(
             topic,
-            "cft",
+            "FilterRoomAndOpenWindows",
             dds::topic::Filter("is_open = true and room_name = 'LivingRoom'"));
     dds::sub::DataReader<DeviceStatus> reader(content_filtered_topic);
 
