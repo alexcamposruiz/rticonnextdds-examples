@@ -16,5 +16,24 @@
                 <element>BuiltinQosLib::Generic.KeepLastReliable.TransientLocal</element>
             </base_name>
         </qos_profile>
+        <qos_profile name="Last10Cache">
+            <base_name>
+                <element>BuiltinQosLib::Generic.KeepLastReliable.TransientLocal</element>
+            </base_name>
+            <!-- Up to this point we will only keep the last sample
+            Lets update the history to keep the last 10 samples -->
+            <datawriter_qos>
+                <history>
+                    <kind>KEEP_LAST_HISTORY_QOS</kind>
+                    <depth>10</depth>
+                </history>
+            </datawriter_qos>
+            <datareader_qos>
+                <history>
+                    <kind>KEEP_LAST_HISTORY_QOS</kind>
+                    <depth>10</depth>
+                </history>
+            </datareader_qos>
+        </qos_profile>
     </qos_library>
 </dds>
