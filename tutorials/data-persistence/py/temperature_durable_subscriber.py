@@ -40,8 +40,8 @@ async def sensor_monitoring(subscriber_name: str):
 
 
 if __name__ == "__main__":
+    subscriber_name = sys.argv[1] if len(sys.argv) > 1 else "subscriber1"
     try:
-        subscriber_name = sys.argv[1] if len(sys.argv) > 1 else "subscriber1"
         rti.asyncio.run(sensor_monitoring(subscriber_name))
     except KeyboardInterrupt:
         pass
