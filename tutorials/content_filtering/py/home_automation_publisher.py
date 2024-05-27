@@ -32,4 +32,7 @@ def publish_sensor(sensor_name: str, room_name: str):
 if __name__ == "__main__":
     sensor_name = sys.argv[1] if len(sys.argv) > 1 else "Window1"
     room_name = sys.argv[2] if len(sys.argv) > 2 else "LivingRoom"
-    publish_sensor(sensor_name, room_name)
+    try:
+        publish_sensor(sensor_name, room_name)
+    except KeyboardInterrupt:
+        pass
