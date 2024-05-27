@@ -24,13 +24,11 @@
             Lets update the history to keep the last 10 samples -->
             <datawriter_qos>
                 <history>
-                    <kind>KEEP_LAST_HISTORY_QOS</kind>
                     <depth>10</depth>
                 </history>
             </datawriter_qos>
             <datareader_qos>
                 <history>
-                    <kind>KEEP_LAST_HISTORY_QOS</kind>
                     <depth>10</depth>
                 </history>
             </datareader_qos>
