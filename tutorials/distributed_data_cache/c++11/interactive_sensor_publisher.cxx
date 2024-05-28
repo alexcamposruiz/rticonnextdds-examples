@@ -63,36 +63,35 @@ class WindowSensor {
 
 };
 
-void publish_sensor(
+void control_sensor(
         const std::string& sensor_name,
         const std::string& room_name)
 {
-
     WindowSensor window_sendor(sensor_name, room_name);
     std::string option;
 
     while (true) {
         std::cout << "\nEnter one of the following options:" << std::endl
-            << "\t- Open" << std::endl
-            << "\t- Close" << std::endl
-            << "\t- Off" << std::endl
-            << "\t- On" << std::endl
-            << "\t- Exit" << std::endl;
+            << "\t- open" << std::endl
+            << "\t- close" << std::endl
+            << "\t- off" << std::endl
+            << "\t- on" << std::endl
+            << "\t- exit" << std::endl;
 
         std::cin >> option;
 
-        if (option == "Open") {
+        if (option == "open") {
             window_sendor.open_window();
-        } else if (option == "Close") {
+        } else if (option == "close") {
             window_sendor.close_window();
-        } else if (option == "Off") {
+        } else if (option == "off") {
             window_sendor.turn_off();
-        } else if (option == "On") {
+        } else if (option == "on") {
             window_sendor.turn_on();
-        } else if (option == "Exit") {
+        } else if (option == "exit") {
             break;
         } else {
-            std::cout << "Invalid option, please enter a valid option [Open|Close|Off|On|Exit]." << std::endl;
+            std::cout << "Invalid option, please enter a valid option [open|close|off|on|exit]." << std::endl;
         }
     }
 }
@@ -101,5 +100,5 @@ int main(int argc, char **argv)
 {
     std::string sensor_name = (argc > 1) ? argv[1] : "Sensor1";
     std::string room_name = (argc > 2) ? argv[2] : "LivingRoom";
-    publish_sensor(sensor_name, room_name);
+    control_sensor(sensor_name, room_name);
 }

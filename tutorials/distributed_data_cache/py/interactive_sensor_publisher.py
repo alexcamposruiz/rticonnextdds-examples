@@ -47,32 +47,32 @@ class WindowSensor:
         self.writer.write(self.status, self.instance)
 
 
-def publish_sensor(sensor_name: str, room_name: str):
+def control_sensor(sensor_name: str, room_name: str):
 
     window_sensor = WindowSensor(sensor_name, room_name)
     help_message = """\nEnter one of the following options:
-        - Open
-        - Close
-        - Off
-        - On
-        - Exit\n"""
+        - open
+        - close
+        - off
+        - on
+        - exit\n"""
 
     while True:
         value = input(help_message).lower()
 
-        if value.startswith("open"):
+        if value == "open":
             window_sensor.open_window()
-        elif value.startswith("close"):
+        elif value == "close":
             window_sensor.close_window()
-        elif value.startswith("off"):
+        elif value == "off":
             window_sensor.turn_off()
-        elif value.startswith("on"):
+        elif value == "on":
             window_sensor.turn_on()
-        elif value.startswith("exit"):
+        elif value == "exit":
             break
         else:
             print(
-                "Invalid option, please enter a valid option [Open|Close|Off|On|Exit]."
+                "Invalid option, please enter a valid option [open|close|off|on|exit]."
             )
 
 
@@ -81,6 +81,6 @@ if __name__ == "__main__":
     room_name = sys.argv[2] if len(sys.argv) > 2 else "LivingRoom"
 
     try:
-        publish_sensor(sensor_name, room_name)
+        control_sensor(sensor_name, room_name)
     except KeyboardInterrupt:
         pass
