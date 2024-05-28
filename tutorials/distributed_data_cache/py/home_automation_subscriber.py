@@ -86,16 +86,16 @@ if __name__ == "__main__":
 
     # Display the sensor names of the instances that are not alive
     wait_for_enter(
-        """[
+        """{
             reader.key_value(info.instance_handle).sensor_name
             for _, info in reader.select().state(dds.InstanceState.NOT_ALIVE_MASK).read()
-        ]"""
+        }"""
     )
     print(
-        [
+        {
             reader.key_value(info.instance_handle).sensor_name
             for _, info in reader.select()
             .state(dds.InstanceState.NOT_ALIVE_MASK)
             .read()
-        ]
+        }
     )

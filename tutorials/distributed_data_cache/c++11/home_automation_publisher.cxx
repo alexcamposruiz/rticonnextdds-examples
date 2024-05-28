@@ -23,7 +23,7 @@ void publish_sensor(
     dds::pub::DataWriter<DeviceStatus> writer(topic);
 
     DeviceStatus device_status(sensor_name, room_name, false);
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 1000; i++) {
         // Simulate the door/window opening and closing
         device_status.is_open(!device_status.is_open());
         writer.write(device_status);
