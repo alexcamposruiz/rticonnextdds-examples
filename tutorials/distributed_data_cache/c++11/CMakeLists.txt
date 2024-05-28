@@ -48,3 +48,25 @@ connextdds_add_application(
     DEPENDENCIES
     ${_CONNEXT_DEPENDENCIES}
 )
+
+connextdds_add_application(
+    TARGET "interactive_publisher"
+    LANG "C++11"
+    OUTPUT_NAME "interactive_sensor_publisher"
+    SOURCES
+        $<TARGET_OBJECTS:home_automation_CXX11_obj>
+        "${CMAKE_CURRENT_SOURCE_DIR}/interactive_sensor_publisher.cxx"
+    DEPENDENCIES
+    ${_CONNEXT_DEPENDENCIES}
+)
+
+connextdds_add_application(
+    TARGET "interactive_subscriber"
+    LANG "C++11"
+    OUTPUT_NAME "interactive_sensor_subscriber"
+    SOURCES
+        $<TARGET_OBJECTS:home_automation_CXX11_obj>
+        "${CMAKE_CURRENT_SOURCE_DIR}/interactive_sensor_subscriber.cxx"
+    DEPENDENCIES
+    ${_CONNEXT_DEPENDENCIES}
+)
