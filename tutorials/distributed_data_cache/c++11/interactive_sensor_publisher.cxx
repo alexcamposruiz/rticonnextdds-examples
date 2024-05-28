@@ -16,8 +16,8 @@
 
 class WindowSensor {
   public:
-    WindowSensor(const std::string& sensor_name, const std::string& room_name) :
-            status_(sensor_name, room_name, false),
+    WindowSensor(const std::string& sensor_name, const std::string& room_name)
+            : status_(sensor_name, room_name, false),
             instance_(dds::core::InstanceHandle::nil()),
             writer_(nullptr)
     {

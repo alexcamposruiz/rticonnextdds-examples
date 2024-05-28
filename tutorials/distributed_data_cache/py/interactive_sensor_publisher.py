@@ -46,6 +46,7 @@ class WindowSensor:
         print("Turning on the sensor...")
         self.writer.write(self.status, self.instance)
 
+
 def publish_sensor(sensor_name: str, room_name: str):
 
     window_sensor = WindowSensor(sensor_name, room_name)
@@ -70,7 +71,10 @@ def publish_sensor(sensor_name: str, room_name: str):
         elif value.startswith("exit"):
             break
         else:
-            print("Invalid option, please enter a valid option [Open|Close|Off|On|Exit].")
+            print(
+                "Invalid option, please enter a valid option [Open|Close|Off|On|Exit]."
+            )
+
 
 if __name__ == "__main__":
     sensor_name = sys.argv[1] if len(sys.argv) > 1 else "Window1"

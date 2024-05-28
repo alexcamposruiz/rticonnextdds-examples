@@ -28,4 +28,6 @@ if __name__ == "__main__":
             .read()
         }
 
-        print(f"Disposed instances: {disposed_instances if len(disposed_instances) > 0 else 'None'}")
+        print(
+            f"Disposed instances: {disposed_instances if len(disposed_instances) > 0 else 'None'}"
+        )
