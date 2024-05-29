@@ -59,14 +59,3 @@ connextdds_add_application(
     DEPENDENCIES
     ${_CONNEXT_DEPENDENCIES}
 )
-
-connextdds_add_application(
-    TARGET "audited"
-    LANG "C++11"
-    OUTPUT_NAME "home_automation_audited"
-    SOURCES
-        $<TARGET_OBJECTS:home_automation_CXX11_obj>
-        "${CMAKE_CURRENT_SOURCE_DIR}/home_automation_audited.cxx"
-    DEPENDENCIES
-    ${_CONNEXT_DEPENDENCIES}
-)
