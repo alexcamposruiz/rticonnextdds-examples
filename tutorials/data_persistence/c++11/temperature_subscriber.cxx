@@ -37,8 +37,8 @@ int main(int argc, char **argv)
                         sample.info().source_timestamp().to_millisecs();
 
                 std::cout << sample.data().sensor_name() << ": "
-                        << sample.data().degrees() << " degrees ("
                         << std::fixed << std::setprecision(2)
+                        << sample.data().degrees() << " degrees ("
                         << timestamp / 1000.0 << "s)" << std::endl;
             });
 
