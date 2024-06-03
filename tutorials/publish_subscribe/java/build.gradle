@@ -31,19 +31,19 @@ task runPublisher(type: JavaExec) {
     group = 'application'
     description = 'Run the DeviceStatusPublisher application'
     classpath = sourceSets.main.runtimeClasspath
-    main = 'DeviceStatusPublisher'
+    mainClass = 'DeviceStatusPublisher'
 }
 
 task runSubscriber(type: JavaExec) {
     group = 'application'
     description = 'Run the DeviceStatusSubscriber application'
     classpath = sourceSets.main.runtimeClasspath
-    main = 'DeviceStatusSubscriber'
+    mainClass = 'DeviceStatusSubscriber'
 }
 
 task runSubscriberWithTimestamp(type: JavaExec) {
     group = 'application'
     description = 'Run the DeviceStatusSubscriberWithTimestamp application'
     classpath = sourceSets.main.runtimeClasspath
-    main = 'DeviceStatusSubscriberWithTimestamp'
+    mainClass = 'DeviceStatusSubscriberWithTimestamp'
 }
