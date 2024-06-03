@@ -1,0 +1,49 @@
+plugins {
+    id 'application'
+}
+
+dependencies {
+    implementation files(System.getenv('NDDSHOME') + '/lib/java/nddsjava.jar')
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['.']
+        }
+    }
+}
+
+task generateCode(type: Exec) {
+    commandLine System.getenv('NDDSHOME') + '/bin/rtiddsgen',
+        '-language', 'Java',
+        'home_automation.idl'
+    onlyIf {
+        !file('DeviceStatus.java').exists()
+    }
+}
+
+tasks.withType(JavaCompile) {
+    dependsOn 'generateCode'
+}
+
+task runPublisher(type: JavaExec) {
+    group = 'application'
+    description = 'Run the DeviceStatusPublisher application'
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'DeviceStatusPublisher'
+}
+
+task runSubscriber(type: JavaExec) {
+    group = 'application'
+    description = 'Run the DeviceStatusSubscriber application'
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'DeviceStatusSubscriber'
+}
+
+task runSubscriberWithTimestamp(type: JavaExec) {
+    group = 'application'
+    description = 'Run the DeviceStatusSubscriberWithTimestamp application'
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'DeviceStatusSubscriberWithTimestamp'
+}
