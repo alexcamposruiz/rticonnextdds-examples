@@ -77,22 +77,22 @@ int main(int argc, char **argv)
 
     wait_for_input("obtain all the samples that you have not read yet.");
     samples = reader.select()
-                      .state(dds::sub::status::SampleState::not_read())
-                      .read();
+            .state(dds::sub::status::SampleState::not_read())
+            .read();
     std::for_each(samples.begin(), samples.end(), print_sample);
 
 
     wait_for_input("obtain again, all the samples that you have not read yet.");
     samples = reader.select()
-                      .state(dds::sub::status::SampleState::not_read())
-                      .read();
+            .state(dds::sub::status::SampleState::not_read())
+            .read();
     std::for_each(samples.begin(), samples.end(), print_sample);
 
 
     wait_for_input("obtain the new instances.");
     samples = reader.select()
-                      .state(dds::sub::status::ViewState::new_view())
-                      .read();
+            .state(dds::sub::status::ViewState::new_view())
+            .read();
     std::for_each(samples.begin(), samples.end(), print_sample);
 
 
@@ -100,8 +100,8 @@ int main(int argc, char **argv)
             "obtain the sensor names of the instances that are not alive.");
     std::vector<std::string> sensor_names;
     samples = reader.select()
-                      .state(dds::sub::status::InstanceState::not_alive_mask())
-                      .read();
+            .state(dds::sub::status::InstanceState::not_alive_mask())
+            .read();
     std::for_each(
             samples.begin(),
             samples.end(),
