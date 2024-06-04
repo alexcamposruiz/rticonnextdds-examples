@@ -11,7 +11,7 @@
 #
 
 cmake_minimum_required(VERSION 3.11)
-project(connext-tutorial-publish-subscribe)
+project(connext-tutorial-content-filtering)
 list(APPEND CMAKE_MODULE_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/../../../resources/cmake/Modules"
 )
@@ -50,23 +50,12 @@ connextdds_add_application(
 )
 
 connextdds_add_application(
-    TARGET "subscriber_with_timestamp"
+    TARGET "subscriber_update_filter"
     LANG "C++11"
-    OUTPUT_NAME "home_automation_subscriber_with_timestamp"
+    OUTPUT_NAME "home_automation_subscriber_update_filter"
     SOURCES
         $<TARGET_OBJECTS:home_automation_CXX11_obj>
-        "${CMAKE_CURRENT_SOURCE_DIR}/home_automation_subscriber_with_timestamp.cxx"
-    DEPENDENCIES
-    ${_CONNEXT_DEPENDENCIES}
-)
-
-connextdds_add_application(
-    TARGET "home_alerts"
-    LANG "C++11"
-    OUTPUT_NAME "home_alerts"
-    SOURCES
-        $<TARGET_OBJECTS:home_automation_CXX11_obj>
-        "${CMAKE_CURRENT_SOURCE_DIR}/home_alerts.cxx"
+        "${CMAKE_CURRENT_SOURCE_DIR}/home_automation_subscriber_update_filter.cxx"
     DEPENDENCIES
     ${_CONNEXT_DEPENDENCIES}
 )

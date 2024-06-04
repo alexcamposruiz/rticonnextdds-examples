@@ -11,7 +11,7 @@
 #
 
 cmake_minimum_required(VERSION 3.11)
-project(connext-tutorial-publish-subscribe)
+project(connext-tutorial-data-persistence)
 list(APPEND CMAKE_MODULE_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/../../../resources/cmake/Modules"
 )
@@ -22,18 +22,18 @@ connextdds_configure_cmake_utils()
 include(ConnextDdsAddExample)
 
 connextdds_call_codegen(
-    IDL "home_automation"
+    IDL "temperature"
     LANG "C++11"
-    PREFIX "home_automation"
+    PREFIX "temperature"
 )
 
 connextdds_add_application(
     TARGET "publisher"
     LANG "C++11"
-    OUTPUT_NAME "home_automation_publisher"
+    OUTPUT_NAME "temperature_publisher"
     SOURCES
-        $<TARGET_OBJECTS:home_automation_CXX11_obj>
-        "${CMAKE_CURRENT_SOURCE_DIR}/home_automation_publisher.cxx"
+        $<TARGET_OBJECTS:temperature_CXX11_obj>
+        "${CMAKE_CURRENT_SOURCE_DIR}/temperature_publisher.cxx"
     DEPENDENCIES
     ${_CONNEXT_DEPENDENCIES}
 )
@@ -41,32 +41,32 @@ connextdds_add_application(
 connextdds_add_application(
     TARGET "subscriber"
     LANG "C++11"
-    OUTPUT_NAME "home_automation_subscriber"
+    OUTPUT_NAME "temperature_subscriber"
     SOURCES
-        $<TARGET_OBJECTS:home_automation_CXX11_obj>
-        "${CMAKE_CURRENT_SOURCE_DIR}/home_automation_subscriber.cxx"
+        $<TARGET_OBJECTS:temperature_CXX11_obj>
+        "${CMAKE_CURRENT_SOURCE_DIR}/temperature_subscriber.cxx"
     DEPENDENCIES
     ${_CONNEXT_DEPENDENCIES}
 )
 
 connextdds_add_application(
-    TARGET "subscriber_with_timestamp"
+    TARGET "durable_subscriber"
     LANG "C++11"
-    OUTPUT_NAME "home_automation_subscriber_with_timestamp"
+    OUTPUT_NAME "temperature_durable_subscriber"
     SOURCES
-        $<TARGET_OBJECTS:home_automation_CXX11_obj>
-        "${CMAKE_CURRENT_SOURCE_DIR}/home_automation_subscriber_with_timestamp.cxx"
+        $<TARGET_OBJECTS:temperature_CXX11_obj>
+        "${CMAKE_CURRENT_SOURCE_DIR}/temperature_durable_subscriber.cxx"
     DEPENDENCIES
     ${_CONNEXT_DEPENDENCIES}
 )
 
 connextdds_add_application(
-    TARGET "home_alerts"
+    TARGET "durable_publisher"
     LANG "C++11"
-    OUTPUT_NAME "home_alerts"
+    OUTPUT_NAME "temperature_durable_publisher"
     SOURCES
-        $<TARGET_OBJECTS:home_automation_CXX11_obj>
-        "${CMAKE_CURRENT_SOURCE_DIR}/home_alerts.cxx"
+        $<TARGET_OBJECTS:temperature_CXX11_obj>
+        "${CMAKE_CURRENT_SOURCE_DIR}/temperature_durable_publisher.cxx"
     DEPENDENCIES
     ${_CONNEXT_DEPENDENCIES}
 )

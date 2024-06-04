@@ -9,31 +9,29 @@
 # damages arising out of the use or inability to use the software.
 #
 
-from datetime import datetime
-
-import rti.asyncio  # required by take_async()
+import rti.asyncio  # required by take_data_async()
 import rti.connextdds as dds
 from home_automation import DeviceStatus
+from rti.types.builtin import KeyedString
 
 
 async def sensor_monitoring():
     participant = dds.DomainParticipant(domain_id=0)
-    topic = dds.Topic(participant, "WindowStatus", DeviceStatus)
-    reader = dds.DataReader(topic)
 
-    async for data, info in reader.take_async():
-        if not info.valid:
-            continue  # skip updates with only meta-data
+    status_topic = dds.Topic(participant, "WindowStatus", DeviceStatus)
+    status_reader = dds.DataReader(status_topic)
 
-        if data.is_open:
-            timestamp = datetime.fromtimestamp(info.source_timestamp.to_seconds())
-            print(
-                f"WARNING: {data.sensor_name} in {data.room_name} is open ({timestamp})"
+    alert_topic = dds.Topic(participant, "HomeAlerts", KeyedString)
+    alert_writer = dds.DataWriter(alert_topic)
+
+    async for data, info in status_reader.take_async():
+        if info.valid and data.is_open:
+            alert = KeyedString(
+                key=data.sensor_name,
+                value=f"Window in {data.room_name} was just opened",
             )
+            alert_writer.write(alert, timestamp=info.source_timestamp)
 
 
 if __name__ == "__main__":
-    try:
-        rti.asyncio.run(sensor_monitoring())
-    except KeyboardInterrupt:
-        pass
+    rti.asyncio.run(sensor_monitoring())

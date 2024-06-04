@@ -9,31 +9,28 @@
 # damages arising out of the use or inability to use the software.
 #
 
-from datetime import datetime
+import sys
+import random
+from time import sleep
 
-import rti.asyncio  # required by take_async()
 import rti.connextdds as dds
-from home_automation import DeviceStatus
+from temperature import Temperature
 
-
-async def sensor_monitoring():
+def publish_temperature(sensor_name: str):
     participant = dds.DomainParticipant(domain_id=0)
-    topic = dds.Topic(participant, "WindowStatus", DeviceStatus)
-    reader = dds.DataReader(topic)
+    topic = dds.Topic(participant, "Temperature", Temperature)
+    writer = dds.DataWriter(topic)
 
-    async for data, info in reader.take_async():
-        if not info.valid:
-            continue  # skip updates with only meta-data
-
-        if data.is_open:
-            timestamp = datetime.fromtimestamp(info.source_timestamp.to_seconds())
-            print(
-                f"WARNING: {data.sensor_name} in {data.room_name} is open ({timestamp})"
-            )
+    temp_reading = Temperature(sensor_name)
+    for _ in range(1000):
+        temp_reading.degrees = random.uniform(30, 40)
+        writer.write(temp_reading)
+        sleep(1)
 
 
 if __name__ == "__main__":
+    sensor_name = sys.argv[1] if len(sys.argv) > 1 else "Sensor1"
     try:
-        rti.asyncio.run(sensor_monitoring())
+        publish_temperature(sensor_name)
     except KeyboardInterrupt:
         pass

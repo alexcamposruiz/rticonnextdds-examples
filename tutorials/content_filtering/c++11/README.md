@@ -1,6 +1,6 @@
-# Tutorial: Publish-Subscribe
+# Tutorial: Content Filtering
 
-This code is part of the Connext Publish-Subscribe tutorial.
+This code is part of the Connext Content Filtering tutorial.
 
 ## Building the Example :wrench:
 
@@ -28,13 +28,6 @@ cmake -DCONNEXTDDS_DIR=/home/rti/rti_connext_dds-x.y.z ..
 cmake --build .
 ```
 
-## Running the Applications :rocket:
+## Running the Example :rocket:
 
-The applications are built under the `build` directory:
-
-```sh
-cd build
-./home_automation_publisher
-...
-```
-
+See the tutorial for instructions.

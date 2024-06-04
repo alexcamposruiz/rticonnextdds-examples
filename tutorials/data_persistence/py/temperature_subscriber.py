@@ -11,25 +11,24 @@
 
 from datetime import datetime
 
-import rti.asyncio  # required by take_async()
 import rti.connextdds as dds
-from home_automation import DeviceStatus
+import rti.asyncio  # required by take_data_async()
+from temperature import Temperature
 
 
 async def sensor_monitoring():
     participant = dds.DomainParticipant(domain_id=0)
-    topic = dds.Topic(participant, "WindowStatus", DeviceStatus)
+    topic = dds.Topic(participant, "Temperature", Temperature)
     reader = dds.DataReader(topic)
 
     async for data, info in reader.take_async():
         if not info.valid:
             continue  # skip updates with only meta-data
 
-        if data.is_open:
-            timestamp = datetime.fromtimestamp(info.source_timestamp.to_seconds())
-            print(
-                f"WARNING: {data.sensor_name} in {data.room_name} is open ({timestamp})"
-            )
+        timestamp = datetime.fromtimestamp(info.source_timestamp.to_seconds())
+        print(
+            f"{data.sensor_name}: {data.degrees:.2f} degrees ({timestamp})"
+        )
 
 
 if __name__ == "__main__":

@@ -10,29 +10,34 @@
 #
 
 import sys
+import random
 from time import sleep
 
 import rti.connextdds as dds
-from home_automation import DeviceStatus
+from temperature import Temperature
 
-
-def publish_sensor(sensor_name: str, room_name: str):
+def publish_temperature(sensor_name: str):
     participant = dds.DomainParticipant(domain_id=0)
-    topic = dds.Topic(participant, "WindowStatus", DeviceStatus)
-    writer = dds.DataWriter(topic)
+    topic = dds.Topic(participant, "Temperature", Temperature)
 
-    device_status = DeviceStatus(sensor_name, room_name, is_open=False)
-    for i in range(1000):
-        # Simulate the window opening and closing
-        device_status.is_open = not device_status.is_open
-        writer.write(device_status)
-        sleep(2)
+    writer_qos = dds.QosProvider.default.datawriter_qos_from_profile(
+        "MyLibrary::Persistence"
+    )
+    writer_qos.durability.storage_settings.enable = True
+    writer_qos.durability.storage_settings.file_name = sensor_name
+
+    writer = dds.DataWriter(topic, writer_qos)
+
+    temp_reading = Temperature(sensor_name)
+    for _ in range(1000):
+        temp_reading.degrees = random.uniform(30, 40)
+        writer.write(temp_reading)
+        sleep(1)
 
 
 if __name__ == "__main__":
-    sensor_name = sys.argv[1] if len(sys.argv) > 1 else "Window1"
-    room_name = sys.argv[2] if len(sys.argv) > 2 else "LivingRoom"
+    sensor_name = sys.argv[1] if len(sys.argv) > 1 else "Sensor1"
     try:
-        publish_sensor(sensor_name, room_name)
+        publish_temperature(sensor_name)
     except KeyboardInterrupt:
         pass
