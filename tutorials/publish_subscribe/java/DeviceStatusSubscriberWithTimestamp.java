@@ -82,12 +82,6 @@ public class DeviceStatusSubscriberWithTimestamp extends Application implements 
                 null, // listener
                 StatusKind.STATUS_MASK_NONE));
 
-        Subscriber subscriber = Objects.requireNonNull(
-            participant.create_subscriber(
-                DomainParticipant.SUBSCRIBER_QOS_DEFAULT,
-                null, // listener
-                StatusKind.STATUS_MASK_NONE));
-
         String typeName = DeviceStatusTypeSupport.get_type_name();
         DeviceStatusTypeSupport.register_type(participant, typeName);
 
@@ -100,7 +94,7 @@ public class DeviceStatusSubscriberWithTimestamp extends Application implements 
                 StatusKind.STATUS_MASK_NONE));
 
         reader = (DeviceStatusDataReader) Objects.requireNonNull(
-            subscriber.create_datareader(
+            participant.create_datareader(
                 topic,
                 Subscriber.DATAREADER_QOS_DEFAULT,
                 null, // listener

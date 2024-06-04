@@ -14,37 +14,13 @@
 #include "home_automation.h"
 #include "home_automationSupport.h"
 
-static int publisher_shutdown(
-    DDS_DomainParticipant *participant)
-{
-    DDS_ReturnCode_t retcode;
-    int status = 0;
-
-    if (participant != NULL) {
-        retcode = DDS_DomainParticipant_delete_contained_entities(participant);
-        if (retcode != DDS_RETCODE_OK) {
-            fprintf(stderr, "delete_contained_entities error %d\n", retcode);
-            status = -1;
-        }
-
-        retcode = DDS_DomainParticipantFactory_delete_participant(
-            DDS_TheParticipantFactory, participant);
-        if (retcode != DDS_RETCODE_OK) {
-            fprintf(stderr, "delete_participant error %d\n", retcode);
-            status = -1;
-        }
-    }
-
-    return status;
-}
+static int publisher_shutdown(DDS_DomainParticipant *participant);
 
 int publish_sensor(
-    char * sensor_name,
-    char * room_name)
+    const char * sensor_name,
+    const char * room_name)
 {
-
     DDS_DomainParticipant *participant = NULL;
-    DDS_Publisher *publisher = NULL;
     DDS_Topic *topic = NULL;
     DDS_DataWriter *writer = NULL;
     DeviceStatusDataWriter *DeviceStatus_writer = NULL;
@@ -63,18 +39,6 @@ int publish_sensor(
 
     if (participant == NULL) {
         fprintf(stderr, "create_participant error\n");
-        publisher_shutdown(participant);
-        return -1;
-    }
-
-    publisher = DDS_DomainParticipant_create_publisher(
-            participant,
-            &DDS_PUBLISHER_QOS_DEFAULT,
-            NULL /* listener */,
-            DDS_STATUS_MASK_NONE);
-
-    if (publisher == NULL) {
-        fprintf(stderr, "create_publisher error\n");
         publisher_shutdown(participant);
         return -1;
     }
@@ -104,12 +68,13 @@ int publish_sensor(
         return -1;
     }
 
-    writer = DDS_Publisher_create_datawriter(
-            publisher,
+    writer = DDS_DomainParticipant_create_datawriter(
+            participant,
             topic,
             &DDS_DATAWRITER_QOS_DEFAULT,
             NULL /* listener */,
             DDS_STATUS_MASK_NONE);
+
     if (writer == NULL) {
         fprintf(stderr, "create_datawriter error\n");
         publisher_shutdown(participant);
@@ -123,19 +88,21 @@ int publish_sensor(
         return -1;
     }
 
-    device_status = DeviceStatusTypeSupport_create_data_ex(DDS_BOOLEAN_TRUE);
+    device_status = DeviceStatusTypeSupport_create_data();
     if (device_status == NULL) {
         fprintf(stderr, "DeviceStatusTypeSupport_create_data error\n");
         publisher_shutdown(participant);
         return -1;
     }
 
-    device_status->sensor_name = sensor_name;
-    device_status->room_name = room_name;
+    strncpy(device_status->sensor_name, sensor_name, 255);
+    strncpy(device_status->room_name, room_name, 255);
     device_status->is_open = DDS_BOOLEAN_FALSE;
 
     for (i = 0; i < 1000; i++) {
-        device_status->is_open = !device_status->is_open;
+        device_status->is_open = device_status->is_open
+                ? DDS_BOOLEAN_FALSE
+                : DDS_BOOLEAN_TRUE;
         retcode = DeviceStatusDataWriter_write(
                 DeviceStatus_writer,
                 device_status,
@@ -147,7 +114,7 @@ int publish_sensor(
         NDDS_Utility_sleep(&send_period);
     }
 
-    retcode = DeviceStatusTypeSupport_delete_data_ex(device_status, DDS_BOOLEAN_TRUE);
+    retcode = DeviceStatusTypeSupport_delete_data(device_status);
     if (retcode != DDS_RETCODE_OK) {
         fprintf(stderr, "DeviceStatusTypeSupport_delete_data error %d\n", retcode);
     }
@@ -155,9 +122,33 @@ int publish_sensor(
     return publisher_shutdown(participant);
 }
 
+static int publisher_shutdown(
+    DDS_DomainParticipant *participant)
+{
+    DDS_ReturnCode_t retcode;
+    int status = 0;
+
+    if (participant != NULL) {
+        retcode = DDS_DomainParticipant_delete_contained_entities(participant);
+        if (retcode != DDS_RETCODE_OK) {
+            fprintf(stderr, "delete_contained_entities error %d\n", retcode);
+            status = -1;
+        }
+
+        retcode = DDS_DomainParticipantFactory_delete_participant(
+            DDS_TheParticipantFactory, participant);
+        if (retcode != DDS_RETCODE_OK) {
+            fprintf(stderr, "delete_participant error %d\n", retcode);
+            status = -1;
+        }
+    }
+
+    return status;
+}
+
 int main(int argc, char **argv)
 {
-    char *sensor_name = "Sensor1";
+    char *sensor_name = "Window1";
     char *room_name = "LivingRoom";
 
     if (argc > 1) {

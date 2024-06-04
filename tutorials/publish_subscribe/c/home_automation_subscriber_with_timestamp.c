@@ -11,98 +11,40 @@
  */
 
 #include "ndds/ndds_c.h"
+#include "dds_c/dds_c_sample_processor.h"
 #include "home_automation.h"
 #include "home_automationSupport.h"
 
-static int subscriber_shutdown(
-    DDS_DomainParticipant *participant)
+
+void DeviceStatusListener_on_new_sample(
+        void *handlerData,
+        const void *sampleData,
+        const struct DDS_SampleInfo *sampleInfo)
 {
-    DDS_ReturnCode_t retcode;
-    int status = 0;
-
-    if (participant != NULL) {
-        retcode = DDS_DomainParticipant_delete_contained_entities(participant);
-        if (retcode != DDS_RETCODE_OK) {
-            fprintf(stderr, "delete_contained_entities error %d\n", retcode);
-            status = -1;
-        }
-
-        retcode = DDS_DomainParticipantFactory_delete_participant(
-            DDS_TheParticipantFactory, participant);
-        if (retcode != DDS_RETCODE_OK) {
-            fprintf(stderr, "delete_participant error %d\n", retcode);
-            status = -1;
-        }
-    }
-
-    return status;
-}
-
-void DeviceStatusListener_on_data_available(
-    void* listener_data,
-    DDS_DataReader* reader)
-{
-    DeviceStatusDataReader *DeviceStatus_reader = NULL;
-    struct DeviceStatusSeq data_seq = DDS_SEQUENCE_INITIALIZER;
-    struct DDS_SampleInfoSeq info_seq = DDS_SEQUENCE_INITIALIZER;
     struct DDS_Time_t timestamp;
-    DeviceStatus *device_status = NULL;
-    DDS_ReturnCode_t retcode;
-    int i;
+    DeviceStatus *device_status = (DeviceStatus *)sampleData;
 
-
-    DeviceStatus_reader = DeviceStatusDataReader_narrow(reader);
-    if (DeviceStatus_reader == NULL) {
-        fprintf(stderr, "DataReader narrow error\n");
-        return;
-    }
-
-    retcode = DeviceStatusDataReader_take(
-            DeviceStatus_reader,
-            &data_seq,
-            &info_seq,
-            DDS_LENGTH_UNLIMITED,
-            DDS_ANY_SAMPLE_STATE,
-            DDS_ANY_VIEW_STATE,
-            DDS_ANY_INSTANCE_STATE);
-    if (retcode == DDS_RETCODE_NO_DATA) {
-        return;
-    } else if (retcode != DDS_RETCODE_OK) {
-        fprintf(stderr, "take error %d\n", retcode);
-        return;
-    }
-
-    for (i = 0; i < DeviceStatusSeq_get_length(&data_seq); ++i) {
-        if (DDS_SampleInfoSeq_get_reference(&info_seq, i)->valid_data) {
-            timestamp = DDS_SampleInfoSeq_get_reference(&info_seq, i)->source_timestamp;
-            device_status = DeviceStatusSeq_get_reference(&data_seq, i);
-            if (device_status->is_open) {
-                printf("WARNING: %s in %s is open (%.3f s)\n",
-                        device_status->sensor_name,
-                        device_status->room_name,
-                        timestamp.sec + timestamp.nanosec / 1e9);
-            }
+    if (sampleInfo->valid_data) {
+        if (device_status->is_open) {
+            timestamp = sampleInfo->source_timestamp;
+            printf("WARNING: %s in %s is open (%.3f s)\n",
+                    device_status->sensor_name,
+                    device_status->room_name,
+                    timestamp.sec + timestamp.nanosec / 1e9);
         }
     }
-
-    retcode = DeviceStatusDataReader_return_loan(
-            DeviceStatus_reader,
-            &data_seq,
-            &info_seq);
-    if (retcode != DDS_RETCODE_OK) {
-        fprintf(stderr, "return loan error %d\n", retcode);
-    }
 }
+
+static int subscriber_shutdown(DDS_DomainParticipant *participant);
 
 int monitor_sensor(void)
 {
 
     DDS_DomainParticipant *participant = NULL;
-    DDS_Subscriber *subscriber = NULL;
     DDS_Topic *topic = NULL;
-    struct DDS_DataReaderListener reader_listener =
-            DDS_DataReaderListener_INITIALIZER;
     DDS_DataReader *reader = NULL;
+    DDS_SampleProcessor *sampleProcessor = NULL;
+    struct DDS_SampleHandler sampleHandler = DDS_SampleHandler_INITIALIZER;
     const char *type_name = NULL;
     DDS_ReturnCode_t retcode;
     struct DDS_Duration_t poll_period = {2,0};
@@ -117,18 +59,6 @@ int monitor_sensor(void)
 
     if (participant == NULL) {
         fprintf(stderr, "create_participant error\n");
-        subscriber_shutdown(participant);
-        return -1;
-    }
-
-    subscriber = DDS_DomainParticipant_create_subscriber(
-            participant,
-            &DDS_SUBSCRIBER_QOS_DEFAULT,
-            NULL /* listener */,
-            DDS_STATUS_MASK_NONE);
-
-    if (subscriber == NULL) {
-        fprintf(stderr, "create_subscriber error\n");
         subscriber_shutdown(participant);
         return -1;
     }
@@ -158,17 +88,29 @@ int monitor_sensor(void)
         return -1;
     }
 
-    reader_listener.on_data_available =
-            DeviceStatusListener_on_data_available;
-
-    reader = DDS_Subscriber_create_datareader(
-            subscriber,
+    reader = DDS_DomainParticipant_create_datareader(
+            participant,
             DDS_Topic_as_topicdescription(topic),
             &DDS_DATAREADER_QOS_DEFAULT,
-            &reader_listener,
-            DDS_DATA_AVAILABLE_STATUS);
+            NULL, /* listener */
+            DDS_STATUS_MASK_NONE);
     if (reader == NULL) {
         fprintf(stderr, "create_datareader error\n");
+        subscriber_shutdown(participant);
+        return -1;
+    }
+
+    sampleProcessor = DDS_SampleProcessor_new(
+            &DDS_ASYNC_WAITSET_PROPERTY_DEFAULT);
+
+    sampleHandler.on_new_sample = DeviceStatusListener_on_new_sample;
+
+    retcode = DDS_SampleProcessor_attach_reader(
+            sampleProcessor,
+            reader,
+            &sampleHandler);
+    if (retcode != DDS_RETCODE_OK) {
+        fprintf(stderr, "Failed to attach reader\n");
         subscriber_shutdown(participant);
         return -1;
     }
@@ -177,7 +119,36 @@ int monitor_sensor(void)
         NDDS_Utility_sleep(&poll_period);
     }
 
+    retcode = DDS_SampleProcessor_delete(sampleProcessor);
+    if (retcode != DDS_RETCODE_OK) {
+        fprintf(stderr, "Failed to delete sample processor\n");
+    }
+
     return subscriber_shutdown(participant);
+}
+
+static int subscriber_shutdown(
+    DDS_DomainParticipant *participant)
+{
+    DDS_ReturnCode_t retcode;
+    int status = 0;
+
+    if (participant != NULL) {
+        retcode = DDS_DomainParticipant_delete_contained_entities(participant);
+        if (retcode != DDS_RETCODE_OK) {
+            fprintf(stderr, "delete_contained_entities error %d\n", retcode);
+            status = -1;
+        }
+
+        retcode = DDS_DomainParticipantFactory_delete_participant(
+            DDS_TheParticipantFactory, participant);
+        if (retcode != DDS_RETCODE_OK) {
+            fprintf(stderr, "delete_participant error %d\n", retcode);
+            status = -1;
+        }
+    }
+
+    return status;
 }
 
 int main(int argc, char **argv)

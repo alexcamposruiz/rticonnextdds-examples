@@ -33,12 +33,6 @@ public class DeviceStatusPublisher extends Application implements AutoCloseable 
                 null, // listener
                 StatusKind.STATUS_MASK_NONE));
 
-        Publisher publisher = Objects.requireNonNull(
-            participant.create_publisher(
-                DomainParticipant.PUBLISHER_QOS_DEFAULT,
-                null, // listener
-                StatusKind.STATUS_MASK_NONE));
-
         String typeName = DeviceStatusTypeSupport.get_type_name();
         DeviceStatusTypeSupport.register_type(participant, typeName);
 
@@ -51,7 +45,7 @@ public class DeviceStatusPublisher extends Application implements AutoCloseable 
                 StatusKind.STATUS_MASK_NONE));
 
         DeviceStatusDataWriter writer = (DeviceStatusDataWriter) Objects.requireNonNull(
-            publisher.create_datawriter(
+            participant.create_datawriter(
                 topic,
                 Publisher.DATAWRITER_QOS_DEFAULT,
                 null, // listener
@@ -89,7 +83,7 @@ public class DeviceStatusPublisher extends Application implements AutoCloseable 
 
     public static void main(String[] args) {
 
-        String sensorName = args.length > 0 ? args[0] : "Sensor1";
+        String sensorName = args.length > 0 ? args[0] : "Window1";
         String roomName = args.length > 1 ? args[1] : "LivingRoom";
 
         try (DeviceStatusPublisher publisherApplication = new DeviceStatusPublisher()) {
