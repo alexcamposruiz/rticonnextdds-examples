@@ -17,10 +17,10 @@
 #include "rti/sub/SampleProcessor.hpp"
 #include "home_automation.hpp"
 
-void wait_for_enter(std::string query)
+void wait_for_input(std::string query)
 {
-    std::cout << std::endl << std::endl << "Press Enter to run the query:"
-            << std::endl << "\t" << query << std::endl;
+    std::cout << std::endl << std::endl
+              << "Press Enter to " << query << std::endl;
     std::cin.get();
 }
 
@@ -31,76 +31,90 @@ int main(int argc, char **argv)
     dds::sub::DataReader<DeviceStatus> reader(topic);
     dds::sub::LoanedSamples<DeviceStatus> samples {};
 
-    auto print_sample = [](const DeviceStatus& sample) {
+    auto print_sample = [](const DeviceStatus &sample) {
         std::cout << sample << std::endl;
     };
 
-    // Display all the full cache
-    wait_for_enter("reader.read()");
+    wait_for_input("obtain all the samples in the cache.");
     samples = reader.read();
     std::for_each(samples.begin(), samples.end(), print_sample);
 
-    // Display all the samples with the attribute is_open set to true
-    wait_for_enter("reader.select().content(dds::sub::Query(reader, \"is_open = true\")).read()");
-    samples = reader.select().content(dds::sub::Query(reader, "is_open = true")).read();
+
+    wait_for_input(
+            "obtain all the samples with the attribute is_open set to true.");
+    samples = reader.select()
+            .content(dds::sub::Query(reader, "is_open = true"))
+            .read();
     std::for_each(samples.begin(), samples.end(), print_sample);
 
-    // Display all the samples with the attribute sensor_name set to Window1
-    wait_for_enter("reader.select().content(dds::sub::Query(reader, \"sensor_name = 'Window1'\")).read()");
-    samples = reader.select().content(dds::sub::Query(reader, "sensor_name = 'Window1'")).read();
+
+    wait_for_input(
+            "obtain all the samples with the attribute sensor_name set to "
+            "Window1.");
+    samples = reader.select()
+            .content(dds::sub::Query(reader, "sensor_name = 'Window1'"))
+            .read();
     std::for_each(samples.begin(), samples.end(), print_sample);
 
-    // Display all the samples with the attribute room_name set to LivingRoom
-    wait_for_enter("reader.select().content(dds::sub::Query(reader, \"room_name = 'LivingRoom'\")).read()");
-    samples = reader.select().content(dds::sub::Query(reader, "room_name = 'LivingRoom'")).read();
+
+    wait_for_input(
+            "obtain all the samples with the attribute room_name set to "
+            "LivingRoom.");
+    samples = reader.select()
+            .content(dds::sub::Query(reader, "room_name = 'LivingRoom'"))
+            .read();
     std::for_each(samples.begin(), samples.end(), print_sample);
 
-    // Display all the samples of the instance with the attribute sensor_name set to Window1
-    wait_for_enter("dds::core::InstanceHandle window1_handle ="
-            "\n\t\treader.lookup_instance(DeviceStatus(\"Window1\", \"LivingRoom\", true))"
-            "\n\treader.select().instance(window1_handle).read()");
+
+    wait_for_input(
+            "obtain all the samples of the instance with the attribute "
+            "sensor_name set to Window1.");
     dds::core::InstanceHandle window1_handle =
             reader.lookup_instance(DeviceStatus("Window1", "LivingRoom", true));
     samples = reader.select().instance(window1_handle).read();
     std::for_each(samples.begin(), samples.end(), print_sample);
 
-    // Display all the samples that you have not read yet
-    wait_for_enter("reader.select().state(dds::sub::status::SampleState::not_read()).read()");
-    samples = reader.select().state(dds::sub::status::SampleState::not_read()).read();
+
+    wait_for_input("obtain all the samples that you have not read yet.");
+    samples = reader.select()
+                      .state(dds::sub::status::SampleState::not_read())
+                      .read();
     std::for_each(samples.begin(), samples.end(), print_sample);
 
-    // Display all the samples that you have not read yet
-    wait_for_enter("reader.select().state(dds::sub::status::SampleState::not_read()).read()");
-    samples = reader.select().state(dds::sub::status::SampleState::not_read()).read();
+
+    wait_for_input("obtain again, all the samples that you have not read yet.");
+    samples = reader.select()
+                      .state(dds::sub::status::SampleState::not_read())
+                      .read();
     std::for_each(samples.begin(), samples.end(), print_sample);
 
-    // Display all the new instances
-    wait_for_enter("reader.select().state(dds::sub::status::ViewState::new_view()).read()");
-    samples = reader.select().state(dds::sub::status::ViewState::new_view()).read();
+
+    wait_for_input("obtain the new instances.");
+    samples = reader.select()
+                      .state(dds::sub::status::ViewState::new_view())
+                      .read();
     std::for_each(samples.begin(), samples.end(), print_sample);
 
-    // Display the sensor names of the instances that are not alive
-    wait_for_enter("samples = reader.select().state(dds::sub::status::InstanceState::not_alive_mask()).read()"
-            "\n\tstd::vector<std::string> sensor_names;"
-            "\n\tstd::for_each(samples.begin(),"
-            "\n\t       samples.end(),"
-            "\n\t       [&sensor_names, &reader](const rti::sub::LoanedSample<DeviceStatus>& sample)"
-            "\n\t       {"
-            "\n\t           DeviceStatus key_holder;"
-            "\n\t           reader.key_value(key_holder, sample.info().instance_handle());"
-            "\n\t           sensor_names.push_back(key_holder.sensor_name());"
-            "\n\t       });");
+
+    wait_for_input(
+            "obtain the sensor names of the instances that are not alive.");
     std::vector<std::string> sensor_names;
-    samples = reader.select().state(dds::sub::status::InstanceState::not_alive_mask()).read();
-    std::for_each(samples.begin(),
+    samples = reader.select()
+                      .state(dds::sub::status::InstanceState::not_alive_mask())
+                      .read();
+    std::for_each(
+            samples.begin(),
             samples.end(),
-            [&sensor_names, &reader](const rti::sub::LoanedSample<DeviceStatus>& sample)
-            {
+            [&sensor_names, &reader]
+            (const rti::sub::LoanedSample<DeviceStatus> &sample) {
                 DeviceStatus key_holder;
                 reader.key_value(key_holder, sample.info().instance_handle());
                 sensor_names.push_back(key_holder.sensor_name());
             });
-    std::for_each(sensor_names.begin(), sensor_names.end(), [](const std::string& sensor_name) {
-        std::cout << sensor_name << std::endl;
-    });
+    std::for_each(
+            sensor_names.begin(),
+            sensor_names.end(),
+            [](const std::string &sensor_name) {
+                std::cout << sensor_name << std::endl;
+            });
 }
