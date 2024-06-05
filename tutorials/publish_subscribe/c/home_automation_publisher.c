@@ -16,9 +16,7 @@
 
 static int publisher_shutdown(DDS_DomainParticipant *participant);
 
-int publish_sensor(
-    const char * sensor_name,
-    const char * room_name)
+int publish_sensor(const char *sensor_name, const char *room_name)
 {
     DDS_DomainParticipant *participant = NULL;
     DDS_Topic *topic = NULL;
@@ -27,7 +25,7 @@ int publish_sensor(
     const char *type_name = NULL;
     DeviceStatus *device_status = NULL;
     DDS_ReturnCode_t retcode;
-    struct DDS_Duration_t send_period = {2,0};
+    struct DDS_Duration_t send_period = { 2, 0 };
     int i;
 
     participant = DDS_DomainParticipantFactory_create_participant(
@@ -44,9 +42,7 @@ int publish_sensor(
     }
 
     type_name = DeviceStatusTypeSupport_get_type_name();
-    retcode = DeviceStatusTypeSupport_register_type(
-            participant,
-            type_name);
+    retcode = DeviceStatusTypeSupport_register_type(participant, type_name);
 
     if (retcode != DDS_RETCODE_OK) {
         fprintf(stderr, "register_type error %d\n", retcode);
@@ -100,9 +96,8 @@ int publish_sensor(
     device_status->is_open = DDS_BOOLEAN_FALSE;
 
     for (i = 0; i < 1000; i++) {
-        device_status->is_open = device_status->is_open
-                ? DDS_BOOLEAN_FALSE
-                : DDS_BOOLEAN_TRUE;
+        device_status->is_open =
+                device_status->is_open ? DDS_BOOLEAN_FALSE : DDS_BOOLEAN_TRUE;
         retcode = DeviceStatusDataWriter_write(
                 DeviceStatus_writer,
                 device_status,
@@ -116,14 +111,15 @@ int publish_sensor(
 
     retcode = DeviceStatusTypeSupport_delete_data(device_status);
     if (retcode != DDS_RETCODE_OK) {
-        fprintf(stderr, "DeviceStatusTypeSupport_delete_data error %d\n", retcode);
+        fprintf(stderr,
+                "DeviceStatusTypeSupport_delete_data error %d\n",
+                retcode);
     }
 
     return publisher_shutdown(participant);
 }
 
-static int publisher_shutdown(
-    DDS_DomainParticipant *participant)
+static int publisher_shutdown(DDS_DomainParticipant *participant)
 {
     DDS_ReturnCode_t retcode;
     int status = 0;
@@ -136,7 +132,8 @@ static int publisher_shutdown(
         }
 
         retcode = DDS_DomainParticipantFactory_delete_participant(
-            DDS_TheParticipantFactory, participant);
+                DDS_TheParticipantFactory,
+                participant);
         if (retcode != DDS_RETCODE_OK) {
             fprintf(stderr, "delete_participant error %d\n", retcode);
             status = -1;

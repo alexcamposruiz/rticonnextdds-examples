@@ -17,37 +17,38 @@
 
 
 void DeviceStatusListener_on_new_sample(
-        void *handlerData,
-        const void *sampleData,
-        const struct DDS_SampleInfo *sampleInfo)
+        void *handler_data,
+        const void *sample_data,
+        const struct DDS_SampleInfo *sample_info)
 {
     struct DDS_Time_t timestamp;
-    DeviceStatus *device_status = (DeviceStatus *)sampleData;
+    DeviceStatus *device_status = (DeviceStatus *) sample_data;
 
-    if (sampleInfo->valid_data) {
+    if (sample_info->valid_data) {
         if (device_status->is_open) {
-            timestamp = sampleInfo->source_timestamp;
+            timestamp = sample_info->source_timestamp;
             printf("WARNING: %s in %s is open (%.3f s)\n",
-                    device_status->sensor_name,
-                    device_status->room_name,
-                    timestamp.sec + timestamp.nanosec / 1e9);
+                   device_status->sensor_name,
+                   device_status->room_name,
+                   timestamp.sec + timestamp.nanosec / 1e9);
         }
     }
 }
 
-static int subscriber_shutdown(DDS_DomainParticipant *participant);
+static int subscriber_shutdown(
+        DDS_DomainParticipant *participant,
+        DDS_SampleProcessor *sample_processor);
 
 int monitor_sensor(void)
 {
-
     DDS_DomainParticipant *participant = NULL;
     DDS_Topic *topic = NULL;
     DDS_DataReader *reader = NULL;
-    DDS_SampleProcessor *sampleProcessor = NULL;
-    struct DDS_SampleHandler sampleHandler = DDS_SampleHandler_INITIALIZER;
+    DDS_SampleProcessor *sample_processor = NULL;
+    struct DDS_SampleHandler sample_handler = DDS_SampleHandler_INITIALIZER;
     const char *type_name = NULL;
     DDS_ReturnCode_t retcode;
-    struct DDS_Duration_t poll_period = {2,0};
+    struct DDS_Duration_t poll_period = { 2, 0 };
     int i;
 
     participant = DDS_DomainParticipantFactory_create_participant(
@@ -59,18 +60,16 @@ int monitor_sensor(void)
 
     if (participant == NULL) {
         fprintf(stderr, "create_participant error\n");
-        subscriber_shutdown(participant);
+        subscriber_shutdown(participant, sample_processor);
         return -1;
     }
 
     type_name = DeviceStatusTypeSupport_get_type_name();
-    retcode = DeviceStatusTypeSupport_register_type(
-            participant,
-            type_name);
+    retcode = DeviceStatusTypeSupport_register_type(participant, type_name);
 
     if (retcode != DDS_RETCODE_OK) {
         fprintf(stderr, "register_type error %d\n", retcode);
-        subscriber_shutdown(participant);
+        subscriber_shutdown(participant, sample_processor);
         return -1;
     }
 
@@ -84,7 +83,7 @@ int monitor_sensor(void)
 
     if (topic == NULL) {
         fprintf(stderr, "create_topic error\n");
-        subscriber_shutdown(participant);
+        subscriber_shutdown(participant, sample_processor);
         return -1;
     }
 
@@ -96,22 +95,22 @@ int monitor_sensor(void)
             DDS_STATUS_MASK_NONE);
     if (reader == NULL) {
         fprintf(stderr, "create_datareader error\n");
-        subscriber_shutdown(participant);
+        subscriber_shutdown(participant, sample_processor);
         return -1;
     }
 
-    sampleProcessor = DDS_SampleProcessor_new(
-            &DDS_ASYNC_WAITSET_PROPERTY_DEFAULT);
+    sample_processor =
+            DDS_SampleProcessor_new(&DDS_ASYNC_WAITSET_PROPERTY_DEFAULT);
 
-    sampleHandler.on_new_sample = DeviceStatusListener_on_new_sample;
+    sample_handler.on_new_sample = DeviceStatusListener_on_new_sample;
 
     retcode = DDS_SampleProcessor_attach_reader(
-            sampleProcessor,
+            sample_processor,
             reader,
-            &sampleHandler);
+            &sample_handler);
     if (retcode != DDS_RETCODE_OK) {
         fprintf(stderr, "Failed to attach reader\n");
-        subscriber_shutdown(participant);
+        subscriber_shutdown(participant, sample_processor);
         return -1;
     }
 
@@ -119,19 +118,23 @@ int monitor_sensor(void)
         NDDS_Utility_sleep(&poll_period);
     }
 
-    retcode = DDS_SampleProcessor_delete(sampleProcessor);
-    if (retcode != DDS_RETCODE_OK) {
-        fprintf(stderr, "Failed to delete sample processor\n");
-    }
-
-    return subscriber_shutdown(participant);
+    return subscriber_shutdown(participant, sample_processor);
 }
 
 static int subscriber_shutdown(
-    DDS_DomainParticipant *participant)
+        DDS_DomainParticipant *participant,
+        DDS_SampleProcessor *sample_processor)
 {
     DDS_ReturnCode_t retcode;
     int status = 0;
+
+    if (sample_processor != NULL) {
+        retcode = DDS_SampleProcessor_delete(sample_processor);
+        if (retcode != DDS_RETCODE_OK) {
+            fprintf(stderr, "Failed to delete sample processor\n");
+            status = -1;
+        }
+    }
 
     if (participant != NULL) {
         retcode = DDS_DomainParticipant_delete_contained_entities(participant);
@@ -141,7 +144,8 @@ static int subscriber_shutdown(
         }
 
         retcode = DDS_DomainParticipantFactory_delete_participant(
-            DDS_TheParticipantFactory, participant);
+                DDS_TheParticipantFactory,
+                participant);
         if (retcode != DDS_RETCODE_OK) {
             fprintf(stderr, "delete_participant error %d\n", retcode);
             status = -1;

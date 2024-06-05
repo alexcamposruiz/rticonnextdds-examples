@@ -17,33 +17,18 @@ sourceSets {
 task generateCode(type: Exec) {
     // Idl file
     def idlFile = 'home_automation.idl'
-    // Generated types
-    def generatedTypes = ['DeviceStatus']
+    // Generated file
+    def generatedFile = 'DeviceStatus.java'
 
     commandLine System.getenv('NDDSHOME') + '/bin/rtiddsgen',
         '-language', 'Java',
         '-replace',
-        'home_automation.idl'
+        idlFile
 
     onlyIf {
-        def suffixes = [
-            '.java',
-            'DataReader.java',
-            'DataWriter.java',
-            'Seq.java',
-            'TypeCode.java',
-            'TypeSupport.java']
+        !file(generatedFile).exists()
+            || file(idlFile).lastModified() > file(generatedFile).lastModified()
 
-        for (String type : generatedTypes) {
-            for (String suffix : suffixes) {
-                if (!file(type + suffix).exists()
-                    || file(idlFile).lastModified() > file(type + suffix).lastModified()) {
-                    return true
-                }
-            }
-        }
-
-        return false
     }
 }
 
