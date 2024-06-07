@@ -24,10 +24,12 @@ void wait_for_input(std::string query)
     std::cin.get();
 }
 
-void print_samples(const dds::sub::LoanedSamples<DeviceStatus> &samples)
+void print_data(const dds::sub::LoanedSamples<DeviceStatus> &samples)
 {
-    for (const auto &sample : samples) {
-        std::cout << sample.data() << std::endl;
+    for (auto sample : samples) {
+        if (sample.info().valid()) {
+            std::cout << sample.data() << std::endl;
+        }
     }
 }
 
@@ -38,12 +40,12 @@ int main(int argc, char **argv)
     dds::sub::DataReader<DeviceStatus> reader(topic);
 
     wait_for_input("obtain all the samples in the cache.");
-    print_samples(reader.read());
+    print_data(reader.read());
 
 
     wait_for_input(
             "obtain all the samples with the attribute is_open set to true.");
-    print_samples(
+    print_data(
             reader.select()
                     .content(dds::sub::Query(reader, "is_open = true"))
                     .read());
@@ -52,7 +54,7 @@ int main(int argc, char **argv)
     wait_for_input(
             "obtain all the samples with the attribute sensor_name set to "
             "Window1.");
-    print_samples(
+    print_data(
             reader.select()
                     .content(dds::sub::Query(reader, "sensor_name = 'Window1'"))
                     .read());
@@ -61,7 +63,7 @@ int main(int argc, char **argv)
     wait_for_input(
             "obtain all the samples with the attribute room_name set to "
             "LivingRoom.");
-    print_samples(
+    print_data(
             reader.select()
                     .content(dds::sub::Query(reader, "room_name = 'LivingRoom'"))
                     .read());
@@ -72,25 +74,25 @@ int main(int argc, char **argv)
             "sensor_name set to Window1.");
     dds::core::InstanceHandle window1_handle =
             reader.lookup_instance(DeviceStatus("Window1", "LivingRoom", true));
-    print_samples(reader.select().instance(window1_handle).read());
+    print_data(reader.select().instance(window1_handle).read());
 
 
     wait_for_input("obtain all the samples that you have not read yet.");
-    print_samples(
+    print_data(
             reader.select()
                     .state(dds::sub::status::SampleState::not_read())
                     .read());
 
 
     wait_for_input("obtain again, all the samples that you have not read yet.");
-    print_samples(
+    print_data(
             reader.select()
                 .state(dds::sub::status::SampleState::not_read())
                 .read());
 
 
     wait_for_input("obtain the new instances.");
-    print_samples(
+    print_data(
             reader.select()
                     .state(dds::sub::status::ViewState::new_view())
                     .read());
@@ -104,7 +106,7 @@ int main(int argc, char **argv)
                     .state(dds::sub::status::InstanceState::not_alive_mask())
                     .read();
 
-    for (const auto &sample : samples) {
+    for (auto sample : samples) {
         reader.key_value(key_holder, sample.info().instance_handle());
         std::cout << key_holder.sensor_name() << std::endl;
     }
