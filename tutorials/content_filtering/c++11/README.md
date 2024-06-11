@@ -22,11 +22,12 @@ can't find it, specify it with the ``-DCONNEXTDDS_DIR`` option, for example:
 cmake -DCONNEXTDDS_DIR=/home/rti/rti_connext_dds-x.y.z ..
 ```
 
-If you are compiling for windows you may also need to specify the [CMake
-Generator](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html).
+If you are compiling for windows you may also need to specify the
+[generator](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html),
+and platform.
 
 ```sh
-cmake .. -G "Visual Studio 15 2017" -A x64
+cmake .. -G "Visual Studio 17 2022" -A x64
 ```
 
 2. Build the applications:
