@@ -43,4 +43,3 @@ Extra. Running interactive subscriber
 dotnet run -- interactive_sub
 ...
 ```
-

@@ -41,7 +41,7 @@ int main(int argc, char **argv)
         if (disposed_instances.empty()) {
             std::cout << "\tNone" << std::endl;
         } else {
-            for (auto instance : disposed_instances) {
+            for (const auto& instance : disposed_instances) {
                 std::cout << "\t" << instance << std::endl;
             }
             disposed_instances.clear();
