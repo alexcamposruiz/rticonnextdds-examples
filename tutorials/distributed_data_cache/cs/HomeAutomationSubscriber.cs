@@ -51,74 +51,72 @@ namespace HomeAutomation
             DataReader<DeviceStatus> reader =
                 participant.ImplicitSubscriber.CreateDataReader(topic);
 
+            WaitForInput("obtain all the samples in the cache.");
+            using (var samples = reader.Read())
             {
-                WaitForInput("obtain all the samples in the cache.");
-                using var samples = reader.Read();
                 PrintData(samples);
             }
 
+            WaitForInput("obtain all the samples with the attribute is_open set to true.");
+            using (var filterCond = reader.CreateQueryCondition("is_open = true"))
+            using (var samples = reader.Select().WithCondition(filterCond).Read())
             {
-                WaitForInput("obtain all the samples with the attribute is_open set to true.");
-                using var filterCond = reader.CreateQueryCondition("is_open = true");
-                using var samples = reader.Select().WithCondition(filterCond).Read();
                 PrintData(samples);
             }
 
+            WaitForInput("obtain all the samples with the attribute sensor_name set to Window1.");
+            using (var filterCond = reader.CreateQueryCondition("sensor_name = 'Window1'"))
+            using (var samples = reader.Select().WithCondition(filterCond).Read())
             {
-                WaitForInput("obtain all the samples with the attribute sensor_name set to Window1.");
-                using var filterCond = reader.CreateQueryCondition("sensor_name = 'Window1'");
-                using var samples = reader.Select().WithCondition(filterCond).Read();
                 PrintData(samples);
             }
 
+            WaitForInput("obtain all the samples with the attribute room_name set to LivingRoom.");
+            using (var filterCond = reader.CreateQueryCondition("room_name = 'LivingRoom'"))
+            using (var samples = reader.Select().WithCondition(filterCond).Read())
             {
-                WaitForInput("obtain all the samples with the attribute room_name set to LivingRoom.");
-                using var filterCond = reader.CreateQueryCondition("room_name = 'LivingRoom'");
-                using var samples = reader.Select().WithCondition(filterCond).Read();
                 PrintData(samples);
             }
 
-            {
-                WaitForInput("obtain all the samples of the instance with the attribute " +
-                            "sensor_name set to Window1.");
-
-                var instanceHandle = reader.LookupInstance(
+            WaitForInput("obtain all the samples of the instance with the attribute " +
+                        "sensor_name set to Window1.");
+            var instanceHandle = reader.LookupInstance(
                     new DeviceStatus(
                         "Window1",
                         "LivingRoom",
                         true));
-                using var samples = reader.Select().WithInstance(instanceHandle).Read();
+            using (var samples = reader.Select().WithInstance(instanceHandle).Read())
+            {
                 PrintData(samples);
             }
 
+            WaitForInput("obtain all the samples that you have not read yet.");
+            using (var samples = reader.Select().WithState(SampleState.NotRead).Read())
             {
-                WaitForInput("obtain all the samples that you have not read yet.");
-                using var samples = reader.Select().WithState(SampleState.NotRead).Read();
                 PrintData(samples);
             }
 
+            WaitForInput("obtain again, all the samples that you have not read yet.");
+            using (var samples = reader.Select().WithState(SampleState.NotRead).Read())
             {
-                WaitForInput("obtain again, all the samples that you have not read yet.");
-                using var samples = reader.Select().WithState(SampleState.NotRead).Read();
                 PrintData(samples);
             }
 
+            WaitForInput("obtain the new instances.");
+            using (var samples = reader.Select().WithState(ViewState.New).Read())
             {
-                WaitForInput("obtain the new instances.");
-                using var samples = reader.Select().WithState(ViewState.New).Read();
                 PrintData(samples);
             }
 
+            WaitForInput("obtain the sensor names of the instances that are not alive.");
+            using (var samples = reader.Select().WithState(InstanceState.NotAlive).Read())
             {
-                WaitForInput("obtain the sensor names of the instances that are not alive.");
-                using var samples = reader.Select().WithState(InstanceState.NotAlive).Read();
                 foreach (var sample in samples)
                 {
                     var keyHolder = reader.GetKeyValue(new DeviceStatus(), sample.Info.InstanceHandle);
                     Console.WriteLine($"Sensor name: {keyHolder.sensor_name}");
                 }
             }
-
         }
     }
 }
