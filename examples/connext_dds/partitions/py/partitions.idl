@@ -10,6 +10,7 @@
  * use or inability to use the software.
  */
 
-struct partitions {
-    int32 x;
+struct Temperature {
+    @key string sensor_id;
+    int32 value;
 };

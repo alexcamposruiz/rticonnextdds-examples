@@ -12,7 +12,7 @@ import sys
 import rti.connextdds as dds
 import rti.asyncio
 
-from partitions import PartitionsExample
+from partitions import Temperature
 
 
 class PartitionsExampleSubscriber:
@@ -23,7 +23,7 @@ class PartitionsExampleSubscriber:
 
         # A Topic has a name and a datatype.
         topic = dds.Topic(
-            self.participant, "Example partitions", PartitionsExample
+            self.participant, "Example partitions", Temperature
         )
 
         # Create a Subscriber, loading QoS profile from USER_QOS_PROFILES.xml

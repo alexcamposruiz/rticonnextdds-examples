@@ -16,11 +16,11 @@
 #include "partitions.hpp"
 #include "application.hpp"  // for command line parsing and ctrl-c
 
-int process_data(dds::sub::DataReader<partitions> reader)
+int process_data(dds::sub::DataReader<Temperature> reader)
 {
     int count = 0;
     // Take all samples
-    dds::sub::LoanedSamples<partitions> samples = reader.take();
+    dds::sub::LoanedSamples<Temperature> samples = reader.take();
 
     for (const auto &sample : samples) {
         if (sample.info().valid()) {
@@ -65,8 +65,8 @@ void run_subscriber_application(
     // If you want to change the Subscriber QoS programmatically rather
     // than using the XML file, you will need to comment out these lines.
 
-    // partition_names[0] = "ABC";
-    // partition_names[1] = "X*Z";
+    // partition_names[0] = "USA/CA/Sunnyvale";
+    // partition_names[1] = "USA/NV/Reno";
     // partition.name(partition_names);
     // subscriber_qos << partition;
 
@@ -78,7 +78,7 @@ void run_subscriber_application(
     dds::sub::Subscriber subscriber(participant, subscriber_qos);
 
     // Create a Topic -- and automatically register the type.
-    dds::topic::Topic<partitions> topic(participant, "Example partitions");
+    dds::topic::Topic<Temperature> topic(participant, "Example partitions");
 
     // Retrieve the default DataReader QoS, from USER_QOS_PROFILES.xml
     dds::sub::qos::DataReaderQos reader_qos =
@@ -92,7 +92,7 @@ void run_subscriber_application(
     //            << Durability::TransientLocal();
 
     // Create a DataReader.
-    dds::sub::DataReader<partitions> reader(subscriber, topic, reader_qos);
+    dds::sub::DataReader<Temperature> reader(subscriber, topic, reader_qos);
 
     // WaitSet will be woken when the attached condition is triggered
     dds::core::cond::WaitSet waitset;

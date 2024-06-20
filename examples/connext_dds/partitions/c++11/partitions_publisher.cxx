@@ -28,12 +28,12 @@ void run_publisher_application(
             dds::core::QosProvider::Default().publisher_qos();
     auto &partition = publisher_qos.policy<dds::core::policy::Partition>();
     std::vector<std::string> partition_names = partition.name();
-
+    std::vector<std::string> sensor_ids {"sensor1", "sensor2", "sensor3"};
     // If you want to change the Publisher QoS programmatically rather
     // than using the XML file, you will need to comment out these lines.
 
-    // partition_names[0] = "ABC";
-    // partition_names[1] = "foo";
+    // partition_names[0] = "USA/CA/Sunnyvale";
+    // partition_names[1] = "USA/NV/*";
     // partition.name(partition_names);
     // publisher_qos << partition;
 
@@ -47,7 +47,7 @@ void run_publisher_application(
     dds::pub::Publisher publisher(participant, publisher_qos);
 
     // Create a Topic -- and automatically register the type.
-    dds::topic::Topic<partitions> topic(participant, "Example partitions");
+    dds::topic::Topic<Temperature> topic(participant, "Example partitions");
 
     // Retrieve the default DataWriter QoS, from USER_QOS_PROFILES.xml
     dds::pub::qos::DataWriterQos writer_qos =
@@ -61,21 +61,22 @@ void run_publisher_application(
     //            << Durability::TransientLocal();
 
     // Create a Datawriter.
-    dds::pub::DataWriter<partitions> writer(publisher, topic, writer_qos);
+    dds::pub::DataWriter<Temperature> writer(publisher, topic, writer_qos);
 
     // Create a data sample for writing.
-    partitions instance;
+    Temperature instance;
 
     // Main loop
     bool update_qos = false;
     for (unsigned int samples_written = 0;
          !application::shutdown_requested && samples_written < sample_count;
          samples_written++) {
-        std::cout << "Writing partitions, count " << samples_written
+        std::cout << "Writing Temperature, count " << samples_written
                   << std::endl;
 
         // Modify and send the sample.
-        instance.x(samples_written);
+        instance.sensor_id(sensor_ids[samples_written % sensor_ids.size()]);
+        instance.value(samples_written);
         writer.write(instance);
 
         // Every 5 samples we will change the partition name.

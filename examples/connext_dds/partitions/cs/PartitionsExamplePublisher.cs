@@ -19,9 +19,9 @@ using Rti.Dds.Topics;
 namespace PartitionsExample
 {
     /// <summary>
-    /// Example application that publishes PartitionsExample.HelloWorld.
+    /// Example application that publishes PartitionsExample.Temperature.
     /// </summary>
-    public static class HelloWorldPublisher
+    public static class TemperaturePublisher
     {
         /// <summary>
         /// Runs the publisher example.
@@ -38,7 +38,7 @@ namespace PartitionsExample
             using DomainParticipant participant = DomainParticipantFactory.Instance.CreateParticipant(domainId);
 
             // A Topic has a name and a datatype.
-            Topic<HelloWorld> topic = participant.CreateTopic<HelloWorld>("Example partitions");
+            Topic<Temperature> topic = participant.CreateTopic<Temperature>("Example partitions");
 
             // A Publisher allows an application to create one or more DataWriters
             // Publisher QoS is configured in USER_QOS_PROFILES.xml
@@ -46,13 +46,16 @@ namespace PartitionsExample
 
             // This DataWriter will write data on Topic "Example HelloWorld"
             // DataWriter QoS is configured in USER_QOS_PROFILES.xml
-            DataWriter<HelloWorld> writer = publisher.CreateDataWriter(topic);
+            DataWriter<Temperature> writer = publisher.CreateDataWriter(topic);
 
-            var sample = new HelloWorld();
+            string[] sensorIds = new string[] { "Sensor1", "Sensor2", "Sensor3" };
+
+            var sample = new Temperature();
             for (int count = 0; count < sampleCount; count++)
             {
                 // Modify the data to be sent here
-                sample.x = count;
+                sample.sensor_id = sensorIds[count % sensorIds.Length];
+                sample.value = count;
 
                 Console.WriteLine($"Writing HelloWorld, count {count}");
 

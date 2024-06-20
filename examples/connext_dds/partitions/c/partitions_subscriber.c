@@ -61,54 +61,54 @@ modification history
 #include <stdio.h>
 #include <stdlib.h>
 
-void partitionsListener_on_requested_deadline_missed(
+void TemperatureListener_on_requested_deadline_missed(
         void *listener_data,
         DDS_DataReader *reader,
         const struct DDS_RequestedDeadlineMissedStatus *status)
 {
 }
 
-void partitionsListener_on_requested_incompatible_qos(
+void TemperatureListener_on_requested_incompatible_qos(
         void *listener_data,
         DDS_DataReader *reader,
         const struct DDS_RequestedIncompatibleQosStatus *status)
 {
 }
 
-void partitionsListener_on_sample_rejected(
+void TemperatureListener_on_sample_rejected(
         void *listener_data,
         DDS_DataReader *reader,
         const struct DDS_SampleRejectedStatus *status)
 {
 }
 
-void partitionsListener_on_liveliness_changed(
+void TemperatureListener_on_liveliness_changed(
         void *listener_data,
         DDS_DataReader *reader,
         const struct DDS_LivelinessChangedStatus *status)
 {
 }
 
-void partitionsListener_on_sample_lost(
+void TemperatureListener_on_sample_lost(
         void *listener_data,
         DDS_DataReader *reader,
         const struct DDS_SampleLostStatus *status)
 {
 }
 
-void partitionsListener_on_subscription_matched(
+void TemperatureListener_on_subscription_matched(
         void *listener_data,
         DDS_DataReader *reader,
         const struct DDS_SubscriptionMatchedStatus *status)
 {
 }
 
-void partitionsListener_on_data_available(
+void TemperatureListener_on_data_available(
         void *listener_data,
         DDS_DataReader *reader)
 {
-    partitionsDataReader *partitions_reader = NULL;
-    struct partitionsSeq data_seq = DDS_SEQUENCE_INITIALIZER;
+    TemperatureDataReader *temperature_reader = NULL;
+    struct TemperatureSeq data_seq = DDS_SEQUENCE_INITIALIZER;
     struct DDS_SampleInfoSeq info_seq = DDS_SEQUENCE_INITIALIZER;
     DDS_ReturnCode_t retcode;
     int i, j;
@@ -116,14 +116,14 @@ void partitionsListener_on_data_available(
     struct DDS_PublicationBuiltinTopicData pub_data =
             DDS_PublicationBuiltinTopicData_INITIALIZER;
 
-    partitions_reader = partitionsDataReader_narrow(reader);
-    if (partitions_reader == NULL) {
+    temperature_reader = TemperatureDataReader_narrow(reader);
+    if (temperature_reader == NULL) {
         printf("DataReader narrow error\n");
         return;
     }
 
-    retcode = partitionsDataReader_take(
-            partitions_reader,
+    retcode = TemperatureDataReader_take(
+            temperature_reader,
             &data_seq,
             &info_seq,
             DDS_LENGTH_UNLIMITED,
@@ -137,14 +137,14 @@ void partitionsListener_on_data_available(
         return;
     }
 
-    for (i = 0; i < partitionsSeq_get_length(&data_seq); ++i) {
+    for (i = 0; i < TemperatureSeq_get_length(&data_seq); ++i) {
         info = DDS_SampleInfoSeq_get_reference(&info_seq, i);
         if (info->valid_data) {
             if (info->view_state == DDS_NEW_VIEW_STATE) {
                 printf("Found new instance\n");
             }
-            partitionsTypeSupport_print_data(
-                    partitionsSeq_get_reference(&data_seq, i));
+            TemperatureTypeSupport_print_data(
+                    TemperatureSeq_get_reference(&data_seq, i));
 
             DDS_DataReader_get_matched_publication_data(
                     reader,
@@ -158,8 +158,8 @@ void partitionsListener_on_data_available(
         }
     }
 
-    retcode = partitionsDataReader_return_loan(
-            partitions_reader,
+    retcode = TemperatureDataReader_return_loan(
+            temperature_reader,
             &data_seq,
             &info_seq);
     if (retcode != DDS_RETCODE_OK) {
@@ -280,8 +280,8 @@ static int subscriber_main(int domainId, int sample_count)
            DDS_StringSeq_get(&subscriber_qos.partition.name, 1));
 
     /* Register the type before creating the topic */
-    type_name = partitionsTypeSupport_get_type_name();
-    retcode = partitionsTypeSupport_register_type(participant, type_name);
+    type_name = TemperatureTypeSupport_get_type_name();
+    retcode = TemperatureTypeSupport_register_type(participant, type_name);
     if (retcode != DDS_RETCODE_OK) {
         printf("register_type error %d\n", retcode);
         subscriber_shutdown(participant);
@@ -305,16 +305,16 @@ static int subscriber_main(int domainId, int sample_count)
 
     /* Set up a data reader listener */
     reader_listener.on_requested_deadline_missed =
-            partitionsListener_on_requested_deadline_missed;
+            TemperatureListener_on_requested_deadline_missed;
     reader_listener.on_requested_incompatible_qos =
-            partitionsListener_on_requested_incompatible_qos;
-    reader_listener.on_sample_rejected = partitionsListener_on_sample_rejected;
+            TemperatureListener_on_requested_incompatible_qos;
+    reader_listener.on_sample_rejected = TemperatureListener_on_sample_rejected;
     reader_listener.on_liveliness_changed =
-            partitionsListener_on_liveliness_changed;
-    reader_listener.on_sample_lost = partitionsListener_on_sample_lost;
+            TemperatureListener_on_liveliness_changed;
+    reader_listener.on_sample_lost = TemperatureListener_on_sample_lost;
     reader_listener.on_subscription_matched =
-            partitionsListener_on_subscription_matched;
-    reader_listener.on_data_available = partitionsListener_on_data_available;
+            TemperatureListener_on_subscription_matched;
+    reader_listener.on_data_available = TemperatureListener_on_data_available;
 
     /* If you want to change the Datareader QoS programmatically rather than
      * using the XML, you will need to add the following lines to your code

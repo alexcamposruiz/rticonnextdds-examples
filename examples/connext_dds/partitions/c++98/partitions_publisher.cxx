@@ -90,8 +90,8 @@ int run_publisher_application(unsigned int domain_id, unsigned int sample_count)
     */
 
     // Register the datatype to use when creating the Topic
-    const char *type_name = partitionsTypeSupport::get_type_name();
-    retcode = partitionsTypeSupport::register_type(participant, type_name);
+    const char *type_name = TemperatureTypeSupport::get_type_name();
+    retcode = TemperatureTypeSupport::register_type(participant, type_name);
     if (retcode != DDS_RETCODE_OK) {
         return shutdown_participant(
                 participant,
@@ -159,8 +159,8 @@ int run_publisher_application(unsigned int domain_id, unsigned int sample_count)
                 EXIT_FAILURE);
     }
 
-    partitionsDataWriter *typed_writer =
-            partitionsDataWriter::narrow(untyped_writer);
+    TemperatureDataWriter *typed_writer =
+            TemperatureDataWriter::narrow(untyped_writer);
     if (typed_writer == NULL) {
         return shutdown_participant(
                 participant,
@@ -168,12 +168,18 @@ int run_publisher_application(unsigned int domain_id, unsigned int sample_count)
                 EXIT_FAILURE);
     }
 
+    DDS_StringSeq sensor_ids(3);
+    sensor_ids.length(3);
+    sensor_ids[0] = DDS_String_dup("sensor1");
+    sensor_ids[1] = DDS_String_dup("sensor2");
+    sensor_ids[2] = DDS_String_dup("sensor3");
+
     // Create data for writing, allocating all members
-    partitions *data = partitionsTypeSupport::create_data();
+    Temperature *data = TemperatureTypeSupport::create_data();
     if (data == NULL) {
         return shutdown_participant(
                 participant,
-                "partitionsTypeSupport::create_data error",
+                "TemperatureTypeSupport::create_data error",
                 EXIT_FAILURE);
     }
 
@@ -189,9 +195,11 @@ int run_publisher_application(unsigned int domain_id, unsigned int sample_count)
     for (unsigned int samples_written = 0;
          !shutdown_requested && samples_written < sample_count;
          ++samples_written) {
-        std::cout << "Writing partitions, count " << samples_written
+        std::cout << "Writing Temperature, count " << samples_written
                   << std::endl;
-        data->x = samples_written;
+
+        data->sensor_id = sensor_ids[samples_written % sensor_ids.length()];
+        data->value = samples_written;
 
         retcode = typed_writer->write(*data, instance_handle);
         if (retcode != DDS_RETCODE_OK) {
@@ -228,7 +236,7 @@ int run_publisher_application(unsigned int domain_id, unsigned int sample_count)
     }
 
     /*
-        retcode = partitions_writer->unregister_instance(
+        retcode = typed_writer->unregister_instance(
             *data, instance_handle);
         if (retcode != DDS_RETCODE_OK) {
             std::cerr << "unregister instance error " << retcode << std::endl;
@@ -236,9 +244,9 @@ int run_publisher_application(unsigned int domain_id, unsigned int sample_count)
     */
 
     /* Delete data sample */
-    retcode = partitionsTypeSupport::delete_data(data);
+    retcode = TemperatureTypeSupport::delete_data(data);
     if (retcode != DDS_RETCODE_OK) {
-        std::cerr << "partitionsTypeSupport::delete_data error " << retcode
+        std::cerr << "TemperatureTypeSupport::delete_data error " << retcode
                   << std::endl;
     }
 

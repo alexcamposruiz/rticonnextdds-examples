@@ -14,7 +14,7 @@ import asyncio
 import rti.connextdds as dds
 import rti.asyncio
 
-from partitions import PartitionsExample
+from partitions import Temperature
 
 
 class PartitionsExamplePublisher:
@@ -22,7 +22,7 @@ class PartitionsExamplePublisher:
         self.participant = dds.DomainParticipant(domain_id)
 
         topic = dds.Topic(
-            self.participant, "Example partitions", PartitionsExample
+            self.participant, "Example partitions", Temperature
         )
 
         self.publisher = dds.Publisher(self.participant)
@@ -32,10 +32,12 @@ class PartitionsExamplePublisher:
         self.samples_written = 0
 
     async def run(self, sample_count: int):
-        sample = PartitionsExample()
+        sensor_ids = ["sensor1", "sensor2", "sensor3"]
+        sample = Temperature()
         while self.samples_written < sample_count:
             # Modify the data to be sent here
-            sample.x = self.samples_written
+            sample.sensor_id = sensor_ids[self.samples_written % len(sensor_ids)]
+            sample.value = self.samples_written
 
             # Every 5 samples we will change the partition name.
             new_partitions = None

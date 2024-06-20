@@ -104,8 +104,8 @@ static int publisher_main(int domainId, int sample_count)
     DDS_Publisher *publisher = NULL;
     DDS_Topic *topic = NULL;
     DDS_DataWriter *writer = NULL;
-    partitionsDataWriter *partitions_writer = NULL;
-    partitions *instance = NULL;
+    TemperatureDataWriter *temperature_writer = NULL;
+    Temperature *instance = NULL;
     DDS_ReturnCode_t retcode;
     DDS_InstanceHandle_t instance_handle = DDS_HANDLE_NIL;
     const char *type_name = NULL;
@@ -113,6 +113,7 @@ static int publisher_main(int domainId, int sample_count)
     struct DDS_Duration_t send_period = { 1, 0 };
     struct DDS_PublisherQos publisher_qos = DDS_PublisherQos_INITIALIZER;
     struct DDS_DataWriterQos datawriter_qos = DDS_DataWriterQos_INITIALIZER;
+    struct DDS_StringSeq sensor_ids = DDS_SEQUENCE_INITIALIZER;
 
     /* To customize participant QoS, use
        the configuration file USER_QOS_PROFILES.xml */
@@ -173,8 +174,8 @@ static int publisher_main(int domainId, int sample_count)
     }
 
     /* Register type before creating topic */
-    type_name = partitionsTypeSupport_get_type_name();
-    retcode = partitionsTypeSupport_register_type(participant, type_name);
+    type_name = TemperatureTypeSupport_get_type_name();
+    retcode = TemperatureTypeSupport_register_type(participant, type_name);
     if (retcode != DDS_RETCODE_OK) {
         printf("register_type error %d\n", retcode);
         publisher_shutdown(participant);
@@ -243,19 +244,24 @@ static int publisher_main(int domainId, int sample_count)
            DDS_StringSeq_get(&publisher_qos.partition.name, 0),
            DDS_StringSeq_get(&publisher_qos.partition.name, 1));
 
-    partitions_writer = partitionsDataWriter_narrow(writer);
-    if (partitions_writer == NULL) {
+    temperature_writer = TemperatureDataWriter_narrow(writer);
+    if (temperature_writer == NULL) {
         printf("DataWriter narrow error\n");
         publisher_shutdown(participant);
         return -1;
     }
 
     /* Create data sample for writing */
+    DDS_StringSeq_set_maximum(&sensor_ids, 3);
+    DDS_StringSeq_set_length(&sensor_ids, 3);
+    *DDS_StringSeq_get_reference(&sensor_ids, 0) = DDS_String_dup("sensor1");
+    *DDS_StringSeq_get_reference(&sensor_ids, 1) = DDS_String_dup("sensor2");
+    *DDS_StringSeq_get_reference(&sensor_ids, 2) = DDS_String_dup("sensor3");
 
-    instance = partitionsTypeSupport_create_data_ex(DDS_BOOLEAN_TRUE);
+    instance = TemperatureTypeSupport_create_data_ex(DDS_BOOLEAN_TRUE);
 
     if (instance == NULL) {
-        printf("partitionsTypeSupport_create_data error\n");
+        printf("TemperatureTypeSupport_create_data error\n");
         publisher_shutdown(participant);
         return -1;
     }
@@ -264,17 +270,22 @@ static int publisher_main(int domainId, int sample_count)
        written multiple times, initialize the key here
        and register the keyed instance prior to writing */
     /*
-      instance_handle = partitionsDataWriter_register_instance(
-      partitions_writer, instance);
+      instance_handle = TemperatureDataWriter_register_instance(
+      temperature_writer, instance);
     */
+
+    /* Populate array with sensor ids */
 
     /* Main loop */
     for (count = 0; (sample_count == 0) || (count < sample_count); ++count) {
-        printf("Writing partitions, count %d\n", count);
-        instance->x = count;
+        printf("Writing Temperature, count %d\n", count);
+        DDS_String_replace(
+                &instance->sensor_id,
+                *DDS_StringSeq_get_reference(&sensor_ids, count % DDS_StringSeq_get_length(&sensor_ids)));
+        instance->value = count;
 
-        retcode = partitionsDataWriter_write(
-                partitions_writer,
+        retcode = TemperatureDataWriter_write(
+                temperature_writer,
                 instance,
                 &instance_handle);
         if (retcode != DDS_RETCODE_OK) {
@@ -316,17 +327,17 @@ static int publisher_main(int domainId, int sample_count)
     }
 
     /*
-        retcode = partitionsDataWriter_unregister_instance(
-            partitions_writer, instance, &instance_handle);
+        retcode = TemperatureDataWriter_unregister_instance(
+            temperature_writer, instance, &instance_handle);
         if (retcode != DDS_RETCODE_OK) {
             printf("unregister instance error %d\n", retcode);
         }
     */
 
     /* Delete data sample */
-    retcode = partitionsTypeSupport_delete_data_ex(instance, DDS_BOOLEAN_TRUE);
+    retcode = TemperatureTypeSupport_delete_data_ex(instance, DDS_BOOLEAN_TRUE);
     if (retcode != DDS_RETCODE_OK) {
-        printf("partitionsTypeSupport_delete_data error %d\n", retcode);
+        printf("TemperatureTypeSupport_delete_data error %d\n", retcode);
     }
 
     /* Cleanup and delete delete all entities */

@@ -24,9 +24,9 @@ using Rti.Dds.Topics;
 namespace PartitionsExample
 {
     /// <summary>
-    /// Example application that publishes PartitionsExample.HelloWorld.
+    /// Example application that publishes PartitionsExample.Temperature.
     /// </summary>
-    public static class HelloWorldSubscriber
+    public static class TemperatureSubscriber
     {
         /// <summary>
         /// Runs the subscriber example.
@@ -43,7 +43,7 @@ namespace PartitionsExample
             using DomainParticipant participant = DomainParticipantFactory.Instance.CreateParticipant(domainId);
 
             // A Topic has a name and a datatype.
-            Topic<HelloWorld> topic = participant.CreateTopic<HelloWorld>("Example partitions");
+            Topic<Temperature> topic = participant.CreateTopic<Temperature>("Example partitions");
 
             // Configure the Subscriber's Partition QoS policy.
             SubscriberQos subscriberQos;
@@ -81,7 +81,7 @@ namespace PartitionsExample
                     .WithDurability(policy => policy.Kind = DurabilityKind.TransientLocal);
             }
 
-            DataReader<HelloWorld> reader = subscriber.CreateDataReader(topic, readerQos);
+            DataReader<Temperature> reader = subscriber.CreateDataReader(topic, readerQos);
 
             // Take all samples as they are received. Stop after taking sampleCount samples.
             await foreach (var sample in reader.TakeAsync().Take(sampleCount))
