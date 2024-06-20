@@ -30,6 +30,7 @@ unsigned int process_data(partitionsDataReader *typed_reader)
     partitionsSeq data_seq;
     DDS_SampleInfoSeq info_seq;
     unsigned int samples_read = 0;
+    struct DDS_PublicationBuiltinTopicData pub_data;
 
     typed_reader->take(
             data_seq,
@@ -45,6 +46,16 @@ unsigned int process_data(partitionsDataReader *typed_reader)
                 std::cout << "Found new instance\n";
             }
             partitionsTypeSupport::print_data(&data_seq[i]);
+
+            typed_reader->get_matched_publication_data(
+                    pub_data,
+                    info_seq[i].publication_handle);
+
+            std::cout << "Received from publisher with partition(s): ";
+            for (int j = 0; j <  pub_data.partition.name.length(); j++) {
+                std::cout << "'" << pub_data.partition.name[j] << "' ";
+            }
+            std::cout << std::endl;
             samples_read++;
         }
     }

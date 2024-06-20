@@ -33,6 +33,14 @@ int process_data(dds::sub::DataReader<partitions> reader)
             }
 
             std::cout << sample.data() << std::endl;
+
+            std::cout << "Received from publisher with partition(s): ";
+            dds::topic::PublicationBuiltinTopicData pub_data =
+                    dds::sub::matched_publication_data(reader, sample.info().publication_handle());
+            for (auto& partition : pub_data.partition().name()) {
+                std::cout << "'" << partition << "' ";
+            }
+            std::cout << std::endl;
         }
     }
 

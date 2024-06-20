@@ -281,54 +281,34 @@ static int publisher_main(int domainId, int sample_count)
             printf("write error %d\n", retcode);
         }
 
-        /* Every 5 samples we will change the Partition name. These are the
-         * partition expressions we are going to try:
-         * "bar", "A*", "A?C", "X*Z", "zzz", "A*C"
-         */
-        if ((count + 1) % 25 == 0) {
-            /* Matches "ABC" -- name[1] here can match name[0] there,
-             * as long as there is some overlapping name */
+        /* Every 5 samples we will change the Partition name. */
+        if ((count + 1) % 15 == 0) {
+            /* Multiple partitions, with match */
+            DDS_StringSeq_set_length(&publisher_qos.partition.name, 2);
             *DDS_StringSeq_get_reference(&publisher_qos.partition.name, 0) =
-                    DDS_String_dup("zzz");
+                    DDS_String_dup("USA/CA/Sunnyvale");
             *DDS_StringSeq_get_reference(&publisher_qos.partition.name, 1) =
-                    DDS_String_dup("A*C");
+                    DDS_String_dup("USA/CA/San Francisco");
 
-            printf("Setting partition to '%s', '%s'...\n",
+            printf("Setting partition to '%s', '%s'\n",
                    DDS_StringSeq_get(&publisher_qos.partition.name, 0),
                    DDS_StringSeq_get(&publisher_qos.partition.name, 1));
             DDS_Publisher_set_qos(publisher, &publisher_qos);
-        } else if ((count + 1) % 20 == 0) {
-            /* Strings that are regular expressions aren't tested for
-             * literal matches, so this won't match "X*Z" */
+        } else if ((count + 1) % 15 == 5) {
+            /* Wildcard match */
+            DDS_StringSeq_set_length(&publisher_qos.partition.name, 1);
             *DDS_StringSeq_get_reference(&publisher_qos.partition.name, 0) =
-                    DDS_String_dup("X*Z");
-            printf("Setting partition to '%s', '%s'...\n",
-                   DDS_StringSeq_get(&publisher_qos.partition.name, 0),
-                   DDS_StringSeq_get(&publisher_qos.partition.name, 1));
+                    DDS_String_dup("USA/CA/*");
+            printf("Setting partition to '%s'\n",
+                   DDS_StringSeq_get(&publisher_qos.partition.name, 0));
             DDS_Publisher_set_qos(publisher, &publisher_qos);
-        } else if ((count + 1) % 15 == 0) {
-            /* Matches "ABC" */
+        } else if ((count + 1) % 15 == 10) {
+            /* No match */
+            DDS_StringSeq_set_length(&publisher_qos.partition.name, 1);
             *DDS_StringSeq_get_reference(&publisher_qos.partition.name, 0) =
-                    DDS_String_dup("A?C");
-            printf("Setting partition to '%s', '%s'...\n",
-                   DDS_StringSeq_get(&publisher_qos.partition.name, 0),
-                   DDS_StringSeq_get(&publisher_qos.partition.name, 1));
-            DDS_Publisher_set_qos(publisher, &publisher_qos);
-        } else if ((count + 1) % 10 == 0) {
-            /* Matches "ABC" */
-            *DDS_StringSeq_get_reference(&publisher_qos.partition.name, 0) =
-                    DDS_String_dup("A*");
-            printf("Setting partition to '%s', '%s'...\n",
-                   DDS_StringSeq_get(&publisher_qos.partition.name, 0),
-                   DDS_StringSeq_get(&publisher_qos.partition.name, 1));
-            DDS_Publisher_set_qos(publisher, &publisher_qos);
-        } else if ((count + 1) % 5 == 0) {
-            /* No literal match for "bar"*/
-            *DDS_StringSeq_get_reference(&publisher_qos.partition.name, 0) =
-                    DDS_String_dup("bar");
-            printf("Setting partition to '%s', '%s'...\n",
-                   DDS_StringSeq_get(&publisher_qos.partition.name, 0),
-                   DDS_StringSeq_get(&publisher_qos.partition.name, 1));
+                    DDS_String_dup("USA/NV/Las Vegas");
+            printf("Setting partition to '%s'\n",
+                   DDS_StringSeq_get(&publisher_qos.partition.name, 0));
             DDS_Publisher_set_qos(publisher, &publisher_qos);
         }
 

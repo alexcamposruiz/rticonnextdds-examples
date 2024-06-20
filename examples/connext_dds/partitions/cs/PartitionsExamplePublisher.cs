@@ -59,36 +59,21 @@ namespace PartitionsExample
                 writer.Write(sample);
 
                 // Every 5 samples we will change the partition name.
-                // These are the partition expressions we are going to try:
-                // "bar", "A*", "A?C", "X*Z", "zzz" and "A*C".
                 string[] newPartitions = null;
-                if ((count + 1) % 25 == 0)
+                if ((count + 1) % 15 == 0)
                 {
-                    // Matches "ABC", name[1] here can match name[0] there,
-                    // as long as there is some overlapping name.
-                    newPartitions = new string[] { "zzz", "A*C" };
+                    // Multiple partitions, with match.
+                    newPartitions = new string[] { "USA/CA/Sunnyvale", "USA/CA/San Francisco" };
                 }
-                else if ((count + 1) % 25 == 20)
+                else if ((count + 1) % 15 == 5)
                 {
-                    // Strings that are regular expressions aren't tested for
-                    // literal matches, so this won't match "X*Z".
-                    newPartitions = new string[] { "X*Z" };
+                    // Wildcard match.
+                    newPartitions = new string[] { "USA/CA/*" };
                 }
-                else if ((count + 1) % 25 == 15)
+                else if ((count + 1) % 15 == 10)
                 {
-                    // Matches "ABC".
-                    newPartitions = new string[] { "A?C" };
-                }
-                else if ((count + 1) % 25 == 10)
-                {
-                    // Matches "ABC".
-                    newPartitions = new string[] { "A*" };
-                }
-                else if ((count + 1) % 25 == 5)
-                {
-                    // No literal match for "bar".
-                    // For the next iterations we are using only one partition.
-                    newPartitions = new string[] { "bar" };
+                    // No match.
+                    newPartitions = new string[] { "USA/NV/Las Vegas" };
                 }
 
                 if (newPartitions != null)

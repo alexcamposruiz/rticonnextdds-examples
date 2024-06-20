@@ -44,7 +44,12 @@ class PartitionsExampleSubscriber:
                     # update made it possible, the View state is ViewState.NEW_VIEW
                     print("Found new instance")
 
+                pub_data = self.reader.matched_publication_data(info.publication_handle)
+
                 print(f"Received: {data}")
+                print(
+                    f"Received from publisher with partition(s): {pub_data.partition.name}"
+                )
                 self.samples_read += 1
                 if self.samples_read >= sample_count:
                     break

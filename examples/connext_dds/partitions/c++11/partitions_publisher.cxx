@@ -79,33 +79,21 @@ void run_publisher_application(
         writer.write(instance);
 
         // Every 5 samples we will change the partition name.
-        // These are the partition expressions we are going to try:
-        // "bar", "A*", "A?C", "X*Z", "zzz" and "A*C".
-        if ((samples_written + 1) % 25 == 0) {
-            // Matches "ABC", name[1] here can match name[0] there,
-            // as long as there is some overlapping name.
+        if ((samples_written + 1) % 15 == 0) {
+            // Multiple partitions, with match
             partition_names.resize(2);
-            partition_names[0] = "zzz";
-            partition_names[1] = "A*C";
+            partition_names[0] = "USA/CA/Sunnyvale";
+            partition_names[1] = "USA/CA/San Francisco";
             update_qos = true;
-        } else if ((samples_written + 1) % 25 == 20) {
-            // Strings that are regular expressions aren't tested for
-            // literal matches, so this won't match "X*Z".
-            partition_names[0] = "X*Z";
-            update_qos = true;
-        } else if ((samples_written + 1) % 25 == 15) {
-            // Matches "ABC".
-            partition_names[0] = "A?C";
-            update_qos = true;
-        } else if ((samples_written + 1) % 25 == 10) {
-            // Matches "ABC".
-            partition_names[0] = "A*";
-            update_qos = true;
-        } else if ((samples_written + 1) % 25 == 5) {
-            // No literal match for "bar".
-            // For the next iterations we are using only one partition.
+        } else if ((samples_written + 1) % 15 == 5) {
+            // Wildcard match
             partition_names.resize(1);
-            partition_names[0] = "bar";
+            partition_names[0] = "USA/CA/*";
+            update_qos = true;
+        } else if ((samples_written + 1) % 15 == 10) {
+            // No match
+            partition_names.resize(1);
+            partition_names[0] = "USA/NV/Las Vegas";
             update_qos = true;
         }
 

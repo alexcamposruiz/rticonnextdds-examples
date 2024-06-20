@@ -111,8 +111,10 @@ void partitionsListener_on_data_available(
     struct partitionsSeq data_seq = DDS_SEQUENCE_INITIALIZER;
     struct DDS_SampleInfoSeq info_seq = DDS_SEQUENCE_INITIALIZER;
     DDS_ReturnCode_t retcode;
-    int i;
+    int i, j;
     struct DDS_SampleInfo *info;
+    struct DDS_PublicationBuiltinTopicData pub_data =
+            DDS_PublicationBuiltinTopicData_INITIALIZER;
 
     partitions_reader = partitionsDataReader_narrow(reader);
     if (partitions_reader == NULL) {
@@ -143,6 +145,16 @@ void partitionsListener_on_data_available(
             }
             partitionsTypeSupport_print_data(
                     partitionsSeq_get_reference(&data_seq, i));
+
+            DDS_DataReader_get_matched_publication_data(
+                    reader,
+                    &pub_data,
+                    &info->publication_handle);
+            printf("Received from publisher with partition(s): ");
+            for (j = 0; j <  DDS_StringSeq_get_length(&pub_data.partition.name); j++) {
+                printf("'%s' ", *DDS_StringSeq_get_reference(&pub_data.partition.name, j));
+            }
+            printf("\n");
         }
     }
 

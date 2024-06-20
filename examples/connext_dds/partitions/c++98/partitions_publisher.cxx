@@ -57,9 +57,9 @@ int run_publisher_application(unsigned int domain_id, unsigned int sample_count)
      * using the XML, you will need to add the following lines to your code
      * and comment out the create_publisher() call bellow.
      */
-    publisher_qos.partition.name.ensure_length(2, 2);
-    publisher_qos.partition.name[0] = DDS_String_dup("ABC");
-    publisher_qos.partition.name[1] = DDS_String_dup("foo");
+    publisher_qos.partition.name.length(2);
+    publisher_qos.partition.name[0] = DDS_String_dup("USA/CA/Sunnyvale");
+    publisher_qos.partition.name[1] = DDS_String_dup("USA/CA/San Francisco");
 
     std::cout << "Setting partition to '" << publisher_qos.partition.name[0]
               << "', '" << publisher_qos.partition.name[1] << "'...\n";
@@ -198,47 +198,29 @@ int run_publisher_application(unsigned int domain_id, unsigned int sample_count)
             std::cerr << "write error " << retcode << std::endl;
         }
 
-        /* Every 5 samples we will change the Partition name. These are the
-         * partition expressions we are going to try:
-         * "bar", "A*", "A?C", "X*Z", "zzz", "A*C"
-         */
-        if ((samples_written + 1) % 25 == 0) {
-            // Matches "ABC" -- name[1] here can match name[0] there,
-            // as long as there is some overlapping name
-            publisher_qos.partition.name[0] = DDS_String_dup("zzz");
-            publisher_qos.partition.name[1] = DDS_String_dup("A*C");
+        // Every 5 samples we will change the Partition name.
+        if ((samples_written + 1) % 15 == 0) {
+            // Multiple partitions, with match
+            publisher_qos.partition.name.length(2);
+            publisher_qos.partition.name[0] = DDS_String_dup("USA/CA/Sunnyvale");
+            publisher_qos.partition.name[1] = DDS_String_dup("USA/CA/San Francisco");
             std::cout << "Setting partition to '"
                       << publisher_qos.partition.name[0] << "', '"
-                      << publisher_qos.partition.name[1] << "'...\n";
+                      << publisher_qos.partition.name[1] << "'\n";
             publisher->set_qos(publisher_qos);
-        } else if ((samples_written + 1) % 20 == 0) {
-            // Strings that are regular expressions aren't tested for
-            // literal matches, so this won't match "X*Z"
-            publisher_qos.partition.name[0] = DDS_String_dup("X*Z");
+        } else if ((samples_written + 1) % 15 == 5) {
+            // Wildcard match
+            publisher_qos.partition.name.length(1);
+            publisher_qos.partition.name[0] = DDS_String_dup("USA/CA/*");
             std::cout << "Setting partition to '"
-                      << publisher_qos.partition.name[0] << "', '"
-                      << publisher_qos.partition.name[1] << "'...\n";
+                      << publisher_qos.partition.name[0] << "'\n";
             publisher->set_qos(publisher_qos);
-        } else if ((samples_written + 1) % 15 == 0) {
-            // Matches "ABC"
-            publisher_qos.partition.name[0] = DDS_String_dup("A?C");
+        } else if ((samples_written + 1) % 15 == 10) {
+            // No match
+            publisher_qos.partition.name.length(1);
+            publisher_qos.partition.name[0] = DDS_String_dup("USA/NV/Las Vegas");
             std::cout << "Setting partition to '"
-                      << publisher_qos.partition.name[0] << "', '"
-                      << publisher_qos.partition.name[1] << "'...\n";
-            publisher->set_qos(publisher_qos);
-        } else if ((samples_written + 1) % 10 == 0) {
-            // Matches "ABC"
-            publisher_qos.partition.name[0] = DDS_String_dup("A*");
-            std::cout << "Setting partition to '"
-                      << publisher_qos.partition.name[0] << "', '"
-                      << publisher_qos.partition.name[1] << "'...\n";
-            publisher->set_qos(publisher_qos);
-        } else if ((samples_written + 1) % 5 == 0) {
-            // No literal match for "bar"
-            publisher_qos.partition.name[0] = DDS_String_dup("bar");
-            std::cout << "Setting partition to '"
-                      << publisher_qos.partition.name[0] << "', '"
-                      << publisher_qos.partition.name[1] << "'...\n";
+                      << publisher_qos.partition.name[0] << "'\n";
             publisher->set_qos(publisher_qos);
         }
 

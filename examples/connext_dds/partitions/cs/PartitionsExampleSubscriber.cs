@@ -56,15 +56,15 @@ namespace PartitionsExample
             {
                 subscriberQos = participant.DefaultSubscriberQos.WithPartition(p =>
                 {
-                    p.Add("ABC");
-                    p.Add("X*Z");
+                    p.Add("USA/CA/Sunnyvale");
+                    p.Add("USA/NV/Reno");
                 });
             }
 
             Subscriber subscriber = participant.CreateSubscriber(subscriberQos);
 
             Console.WriteLine(
-                "Subscriber partition set to: " 
+                "Subscriber partition set to: "
                 + string.Join(separator: ",", values: subscriber.Qos.Partition.Name));
 
             DataReaderQos readerQos;
@@ -97,6 +97,14 @@ namespace PartitionsExample
                     }
 
                     Console.WriteLine(sample.Data);
+
+                    var pubData = reader.GetMatchedPublicationData(sample.Info.PublicationHandle);
+                    Console.WriteLine("Received from publisher with partition(s):");
+                    foreach (var partition in pubData.Partition.Name)
+                    {
+                        Console.WriteLine($"'{partition}'");
+                    }
+                    Console.WriteLine();
                 }
             }
         }
