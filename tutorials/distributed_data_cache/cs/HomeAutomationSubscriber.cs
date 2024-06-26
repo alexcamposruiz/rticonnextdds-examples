@@ -31,12 +31,9 @@ namespace HomeAutomation
 
         private static void PrintData(LoanedSamples<DeviceStatus> samples)
         {
-            foreach (var sample in samples)
+            foreach (var sample in samples.ValidData())
             {
-                if (sample.Info.ValidData)
-                {
-                    Console.WriteLine($"Sample:\n{sample.Data}");
-                }
+                Console.WriteLine($"Sample:\n{sample}");
             }
         }
 
@@ -80,11 +77,7 @@ namespace HomeAutomation
 
             WaitForInput("obtain all the samples of the instance with the attribute " +
                         "sensor_name set to Window1.");
-            var instanceHandle = reader.LookupInstance(
-                    new DeviceStatus(
-                        "Window1",
-                        "LivingRoom",
-                        true));
+            var instanceHandle = reader.LookupInstance(new DeviceStatus { sensor_name = "Window1"});
             using (var samples = reader.Select().WithInstance(instanceHandle).Read())
             {
                 PrintData(samples);
