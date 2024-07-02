@@ -19,9 +19,9 @@ using Rti.Dds.Topics;
 namespace PartitionsExample
 {
     /// <summary>
-    /// Example application that publishes PartitionsExample.HelloWorld.
+    /// Example application that publishes PartitionsExample.Temperature.
     /// </summary>
-    public static class HelloWorldPublisher
+    public static class TemperaturePublisher
     {
         /// <summary>
         /// Runs the publisher example.
@@ -38,7 +38,7 @@ namespace PartitionsExample
             using DomainParticipant participant = DomainParticipantFactory.Instance.CreateParticipant(domainId);
 
             // A Topic has a name and a datatype.
-            Topic<HelloWorld> topic = participant.CreateTopic<HelloWorld>("Example partitions");
+            Topic<Temperature> topic = participant.CreateTopic<Temperature>("Example partitions");
 
             // A Publisher allows an application to create one or more DataWriters
             // Publisher QoS is configured in USER_QOS_PROFILES.xml
@@ -46,49 +46,37 @@ namespace PartitionsExample
 
             // This DataWriter will write data on Topic "Example HelloWorld"
             // DataWriter QoS is configured in USER_QOS_PROFILES.xml
-            DataWriter<HelloWorld> writer = publisher.CreateDataWriter(topic);
+            DataWriter<Temperature> writer = publisher.CreateDataWriter(topic);
 
-            var sample = new HelloWorld();
+            string[] sensorIds = new string[] { "Sensor1", "Sensor2", "Sensor3" };
+
+            var sample = new Temperature();
             for (int count = 0; count < sampleCount; count++)
             {
                 // Modify the data to be sent here
-                sample.x = count;
+                sample.sensor_id = sensorIds[count % sensorIds.Length];
+                sample.value = count;
 
                 Console.WriteLine($"Writing HelloWorld, count {count}");
 
                 writer.Write(sample);
 
                 // Every 5 samples we will change the partition name.
-                // These are the partition expressions we are going to try:
-                // "bar", "A*", "A?C", "X*Z", "zzz" and "A*C".
                 string[] newPartitions = null;
-                if ((count + 1) % 25 == 0)
+                if ((count + 1) % 15 == 0)
                 {
-                    // Matches "ABC", name[1] here can match name[0] there,
-                    // as long as there is some overlapping name.
-                    newPartitions = new string[] { "zzz", "A*C" };
+                    // Multiple partitions, with match.
+                    newPartitions = new string[] { "USA/CA/Sunnyvale", "USA/CA/San Francisco" };
                 }
-                else if ((count + 1) % 25 == 20)
+                else if ((count + 1) % 15 == 5)
                 {
-                    // Strings that are regular expressions aren't tested for
-                    // literal matches, so this won't match "X*Z".
-                    newPartitions = new string[] { "X*Z" };
+                    // Wildcard match.
+                    newPartitions = new string[] { "USA/CA/*" };
                 }
-                else if ((count + 1) % 25 == 15)
+                else if ((count + 1) % 15 == 10)
                 {
-                    // Matches "ABC".
-                    newPartitions = new string[] { "A?C" };
-                }
-                else if ((count + 1) % 25 == 10)
-                {
-                    // Matches "ABC".
-                    newPartitions = new string[] { "A*" };
-                }
-                else if ((count + 1) % 25 == 5)
-                {
-                    // No literal match for "bar".
-                    // For the next iterations we are using only one partition.
-                    newPartitions = new string[] { "bar" };
+                    // No match.
+                    newPartitions = new string[] { "USA/NV/Las Vegas" };
                 }
 
                 if (newPartitions != null)

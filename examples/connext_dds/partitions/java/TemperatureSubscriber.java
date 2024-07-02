@@ -28,13 +28,14 @@ import com.rti.dds.subscription.SampleStateKind;
 import com.rti.dds.subscription.Subscriber;
 import com.rti.dds.subscription.SubscriberQos;
 import com.rti.dds.subscription.ViewStateKind;
+import com.rti.dds.publication.builtin.PublicationBuiltinTopicData;
 import com.rti.dds.topic.Topic;
 
-public class partitionsSubscriber extends Application implements AutoCloseable {
+public class TemperatureSubscriber extends Application implements AutoCloseable {
     private DomainParticipant participant = null;  // Usually one per
                                                    // application
-    private partitionsDataReader reader = null;
-    private final partitionsSeq dataSeq = new partitionsSeq();
+    private TemperatureDataReader reader = null;
+    private final TemperatureSeq dataSeq = new TemperatureSeq();
     private final SampleInfoSeq infoSeq = new SampleInfoSeq();
 
     private int processData()
@@ -59,7 +60,17 @@ public class partitionsSubscriber extends Application implements AutoCloseable {
                         System.out.print("Found new instance\n");
                     }
                     System.out.println(
-                            "   x: " + ((partitions) dataSeq.get(i)).x);
+                            "   sensor_id: " + ((Temperature) dataSeq.get(i)).sensor_id);
+                    System.out.println(
+                            "   value: " + ((Temperature) dataSeq.get(i)).value);
+
+                    PublicationBuiltinTopicData pubData = new PublicationBuiltinTopicData();
+                    reader.get_matched_publication_data(pubData, info.publication_handle);
+
+                    System.out.println("Received from publisher with partition(s):");
+                    for (int j = 0; j < pubData.partition.name.size(); j++) {
+                        System.out.println("'" + pubData.partition.name.get(j) + "'");
+                    }
                 }
                 samplesRead++;
             }
@@ -92,8 +103,8 @@ public class partitionsSubscriber extends Application implements AutoCloseable {
          */
         /*
     subscriber_qos.partition.name.clear();
-    subscriber_qos.partition.name.add("ABC");
-    subscriber_qos.partition.name.add("X*Z");
+    subscriber_qos.partition.name.add("USA/CA/Sunnyvale");
+    subscriber_qos.partition.name.add("USA/NV/Reno");
 
         Subscriber subscriber = Subscriber subscriber =
             Objects.requireNonNull(participant.create_subscriber(
@@ -114,8 +125,8 @@ public class partitionsSubscriber extends Application implements AutoCloseable {
                 + "', '" + subscriber_qos.partition.name.get(1) + "'...\n");
 
         // Register type before creating topic
-        String typeName = partitionsTypeSupport.get_type_name();
-        partitionsTypeSupport.register_type(participant, typeName);
+        String typeName = TemperatureTypeSupport.get_type_name();
+        TemperatureTypeSupport.register_type(participant, typeName);
 
         // Create a Topic with a name and a datatype
         Topic topic = Objects.requireNonNull(participant.create_topic(
@@ -149,7 +160,7 @@ public class partitionsSubscriber extends Application implements AutoCloseable {
         */
 
         // This DataReader reads data on "Example partitions" Topic
-        reader = (partitionsDataReader) Objects.requireNonNull(
+        reader = (TemperatureDataReader) Objects.requireNonNull(
                 subscriber.create_datareader(
                         topic,
                         Subscriber.DATAREADER_QOS_DEFAULT,
@@ -202,8 +213,8 @@ public class partitionsSubscriber extends Application implements AutoCloseable {
     {
         // Create example and run: Uses try-with-resources,
         // subscriberApplication.close() automatically called
-        try (partitionsSubscriber subscriberApplication =
-                     new partitionsSubscriber()) {
+        try (TemperatureSubscriber subscriberApplication =
+                     new TemperatureSubscriber()) {
             subscriberApplication.parseArguments(args);
             subscriberApplication.addShutdownHook();
             subscriberApplication.runApplication();

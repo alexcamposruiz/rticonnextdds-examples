@@ -19,7 +19,7 @@ import com.rti.dds.publication.Publisher;
 import com.rti.dds.publication.PublisherQos;
 import com.rti.dds.topic.Topic;
 
-public class partitionsPublisher extends Application implements AutoCloseable {
+public class TemperaturePublisher extends Application implements AutoCloseable {
     // Usually one per application
     private DomainParticipant participant = null;
 
@@ -42,8 +42,8 @@ public class partitionsPublisher extends Application implements AutoCloseable {
          */
         /*
         publisher_qos.partition.name.clear();
-    publisher_qos.partition.name.add("ABC");
-    publisher_qos.partition.name.add("foo");
+    publisher_qos.partition.name.add("USA/CA/Sunnyvale");
+    publisher_qos.partition.name.add("USA/NV/*");
 
         publisher = participant.create_publisher(publisher_qos,
                                                  null,
@@ -62,8 +62,8 @@ public class partitionsPublisher extends Application implements AutoCloseable {
                 + "', '" + publisher_qos.partition.name.get(1) + "'...\n");
 
         // Register type before creating topic
-        String typeName = partitionsTypeSupport.get_type_name();
-        partitionsTypeSupport.register_type(participant, typeName);
+        String typeName = TemperatureTypeSupport.get_type_name();
+        TemperatureTypeSupport.register_type(participant, typeName);
 
         // Create a Topic with a name and a datatype
         Topic topic = Objects.requireNonNull(participant.create_topic(
@@ -90,7 +90,7 @@ public class partitionsPublisher extends Application implements AutoCloseable {
         HistoryQosPolicyKind.KEEP_LAST_HISTORY_QOS;
     datawriter_qos.history.depth = 3;
 
-    writer = (partitionsDataWriter) Objects.requireNonNull(
+    writer = (TemperatureDataWriter) Objects.requireNonNull(
             publisher.create_datawriter(
                     topic,
                     datawriter_qos,
@@ -98,16 +98,18 @@ public class partitionsPublisher extends Application implements AutoCloseable {
                     StatusKind.STATUS_MASK_NONE));
         */
 
-        partitionsDataWriter writer =
-                (partitionsDataWriter) Objects.requireNonNull(
+        TemperatureDataWriter writer =
+                (TemperatureDataWriter) Objects.requireNonNull(
                         publisher.create_datawriter(
                                 topic,
                                 Publisher.DATAWRITER_QOS_DEFAULT,
                                 null,
                                 StatusKind.STATUS_MASK_NONE));
 
+        String[] sensorIds = new String[] { "sensor1", "sensor2", "sensor3" };
+
         // Create data sample for writing
-        partitions data = new partitions();
+        Temperature data = new Temperature();
 
         InstanceHandle_t instance_handle = InstanceHandle_t.HANDLE_NIL;
         /* For a data type that has a key, if the same instance is going to be
@@ -121,8 +123,10 @@ public class partitionsPublisher extends Application implements AutoCloseable {
         for (int samplesWritten = 0;
              !isShutdownRequested() && samplesWritten < getMaxSampleCount();
              samplesWritten++) {
-            System.out.println("Writing partitions, count " + samplesWritten);
-            data.x = samplesWritten;
+            System.out.println("Writing Temperature, count " + samplesWritten);
+
+            data.sensor_id = sensorIds[samplesWritten % sensorIds.length];
+            data.value = samplesWritten;
             writer.write(data, instance_handle);
             try {
                 Thread.sleep(sendPeriodMillis);
@@ -131,52 +135,32 @@ public class partitionsPublisher extends Application implements AutoCloseable {
                 break;
             }
 
-            /* Every 5 samples we will change the Partition name. These are the
-             * partition expressions we are going to try:
-             * "bar", "A*", "A?C", "X*Z", "zzz", "A*C"
-             */
-            if ((samplesWritten + 1) % 25 == 0) {
-                // Matches "ABC" -- name[1] here can match name[0] there,
-                // as long as there is some overlapping name
-                publisher_qos.partition.name.set(0, "zzz");
-                publisher_qos.partition.name.set(1, "A*C");
+            // Every 5 samples we will change the Partition name
+            if ((samplesWritten + 1) % 15 == 0) {
+                // Multiple partitions, with match
+                publisher_qos.partition.name.clear();
+                publisher_qos.partition.name.add("USA/CA/Sunnyvale");
+                publisher_qos.partition.name.add("USA/CA/San Francisco");
                 System.out.print(
                         "Setting partition to '"
                         + publisher_qos.partition.name.get(0) + "', '"
-                        + publisher_qos.partition.name.get(1) + "'...\n");
+                        + publisher_qos.partition.name.get(1) + "'\n");
                 publisher.set_qos(publisher_qos);
-            } else if ((samplesWritten + 1) % 20 == 0) {
-                // Strings that are regular expressions aren't tested for
-                // literal matches, so this won't match "X*Z"
-                publisher_qos.partition.name.set(0, "X*Z");
+            } else if ((samplesWritten + 1) % 15 == 5) {
+                // Wildcard match
+                publisher_qos.partition.name.clear();
+                publisher_qos.partition.name.add("USA/CA/*");
                 System.out.print(
                         "Setting partition to '"
-                        + publisher_qos.partition.name.get(0) + "', '"
-                        + publisher_qos.partition.name.get(1) + "'...\n");
+                        + publisher_qos.partition.name.get(0) + "'\n");
                 publisher.set_qos(publisher_qos);
-            } else if ((samplesWritten + 1) % 15 == 0) {
-                // Matches "ABC"
-                publisher_qos.partition.name.set(0, "A?C");
+            } else if ((samplesWritten + 1) % 15 == 10) {
+                // No match
+                publisher_qos.partition.name.clear();
+                publisher_qos.partition.name.add("USA/NV/Las Vegas");
                 System.out.print(
                         "Setting partition to '"
-                        + publisher_qos.partition.name.get(0) + "', '"
-                        + publisher_qos.partition.name.get(1) + "'...\n");
-                publisher.set_qos(publisher_qos);
-            } else if ((samplesWritten + 1) % 10 == 0) {
-                // Matches "ABC"
-                publisher_qos.partition.name.set(0, "A*");
-                System.out.print(
-                        "Setting partition to '"
-                        + publisher_qos.partition.name.get(0) + "', '"
-                        + publisher_qos.partition.name.get(1) + "'...\n");
-                publisher.set_qos(publisher_qos);
-            } else if ((samplesWritten + 1) % 5 == 0) {
-                // No literal match for "bar"
-                publisher_qos.partition.name.set(0, "bar");
-                System.out.print(
-                        "Setting partition to '"
-                        + publisher_qos.partition.name.get(0) + "', '"
-                        + publisher_qos.partition.name.get(1) + "'...\n");
+                        + publisher_qos.partition.name.get(0) + "'\n");
                 publisher.set_qos(publisher_qos);
             }
         }
@@ -199,8 +183,8 @@ public class partitionsPublisher extends Application implements AutoCloseable {
     {
         // Create example and run: Uses try-with-resources,
         // publisherApplication.close() automatically called
-        try (partitionsPublisher publisherApplication =
-                     new partitionsPublisher()) {
+        try (TemperaturePublisher publisherApplication =
+                     new TemperaturePublisher()) {
             publisherApplication.parseArguments(args);
             publisherApplication.addShutdownHook();
             publisherApplication.runApplication();

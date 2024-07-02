@@ -16,29 +16,29 @@
 	<qos_library name="partitions_Library">
 
 		<qos_profile name="partitions_Profile" is_default_qos="true">
-		
-			<!-- Here we set two partitions the Publisher is going to be
-				 member of: "ABC" and "foo" -->
-			<publisher_qos>
-				<partition>
-					<name>
-						<element>ABC</element>
-                        <element>foo</element>
-					</name>
-				</partition>
-			</publisher_qos>
-			
-			<!--  Here we set two partitions the Subscriber is going to
-				be member of: "ABC" and "X*Z" -->
-			<subscriber_qos>
-				<partition>
-					<name>
-						<element>ABC</element>
-                        <element>X*Z</element>
-					</name>
-				</partition>
-			</subscriber_qos>
-			
+
+            <!-- Here we set two partitions the Publisher is going to be
+                 of: "USA/CA/Sunnyvale" and "USA/NV/*" -->
+            <publisher_qos>
+                <partition>
+                    <name>
+                        <element>USA/CA/Sunnyvale</element>
+                        <element>USA/NV/*</element>
+                    </name>
+                </partition>
+            </publisher_qos>
+
+            <!--  Here we set two partitions the Subscriber is going to
+                be member of: "USA/CA/Sunnyvale" and "USA/NV/Reno" -->
+            <subscriber_qos>
+                <partition>
+                    <name>
+                        <element>USA/CA/Sunnyvale</element>
+                        <element>USA/NV/Reno</element>
+                    </name>
+                </partition>
+            </subscriber_qos>
+
 			<!-- In this example we set a Reliable Data Writer with a history 
 			    depth of 3 samples and Transient Local durability. -->
 			<datawriter_qos>

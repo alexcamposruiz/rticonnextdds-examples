@@ -15,9 +15,9 @@ using System;
 namespace PartitionsExample
 {
     /// <summary>
-    /// Runs HelloWorldPublisher or HelloWorldSubscriber.
+    /// Runs TemperaturePublisher or TemperatureSubscriber.
     /// </summary>
-    public static class HelloWorldProgram
+    public static class TemperatureProgram
     {
         /// <summary>
         /// The Main function runs the publisher or the subscriber.
@@ -32,13 +32,13 @@ namespace PartitionsExample
 
             if (arguments.Pub)
             {
-                Console.WriteLine($"Running HelloWorldPublisher on domain {arguments.Domain}");
-                HelloWorldPublisher.RunPublisher(arguments.Domain, arguments.SampleCount);
+                Console.WriteLine($"Running TemperaturePublisher on domain {arguments.Domain}");
+                TemperaturePublisher.RunPublisher(arguments.Domain, arguments.SampleCount);
             }
             else
             {
-                Console.WriteLine($"Running HelloWorldSubscriber on domain {arguments.Domain}");
-                HelloWorldSubscriber
+                Console.WriteLine($"Running TemperatureSubscriber on domain {arguments.Domain}");
+                TemperatureSubscriber
                     .RunSubscriber(arguments.Domain, arguments.SampleCount)
                     .Wait();
             }

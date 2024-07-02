@@ -14,7 +14,7 @@ import asyncio
 import rti.connextdds as dds
 import rti.asyncio
 
-from partitions import PartitionsExample
+from partitions import Temperature
 
 
 class PartitionsExamplePublisher:
@@ -22,7 +22,7 @@ class PartitionsExamplePublisher:
         self.participant = dds.DomainParticipant(domain_id)
 
         topic = dds.Topic(
-            self.participant, "Example partitions", PartitionsExample
+            self.participant, "Example partitions", Temperature
         )
 
         self.publisher = dds.Publisher(self.participant)
@@ -32,33 +32,24 @@ class PartitionsExamplePublisher:
         self.samples_written = 0
 
     async def run(self, sample_count: int):
-        sample = PartitionsExample()
+        sensor_ids = ["sensor1", "sensor2", "sensor3"]
+        sample = Temperature()
         while self.samples_written < sample_count:
             # Modify the data to be sent here
-            sample.x = self.samples_written
+            sample.sensor_id = sensor_ids[self.samples_written % len(sensor_ids)]
+            sample.value = self.samples_written
 
             # Every 5 samples we will change the partition name.
-            # These are the partition expressions we are going to set:
-            # "bar", "A*", "A?C", "X*Z", "zzz" and "A*C".
             new_partitions = None
-            if (self.samples_written + 1) % 25 == 0:
-                # Matches "ABC", name[1] here can match name[0] there,
-                # as long as there is some overlapping name.
-                new_partitions = ["zzz", "A*C"]
-            elif (self.samples_written + 1) % 25 == 20:
-                # Strings that are regular expressions aren't tested for
-                # literal matches, so this won't match "X*Z".
-                new_partitions = ["X*Z"]
-            elif (self.samples_written + 1) % 25 == 15:
-                # Matches "ABC".
-                new_partitions = ["A?C"]
-            elif (self.samples_written + 1) % 25 == 10:
-                # Matches "ABC".
-                new_partitions = ["A*"]
-            elif (self.samples_written + 1) % 25 == 5:
-                # No literal match for "bar".
-                # For the next iterations we are using only one partition.
-                new_partitions = ["bar"]
+            if (self.samples_written + 1) % 15 == 0:
+                # Multiple partitions, with match
+                new_partitions = ["USA/CA/Sunnyvale", "USA/CA/San Francisco"]
+            elif (self.samples_written + 1) % 15 == 5:
+                # Wildcard match
+                new_partitions = ["USA/CA/*"]
+            elif (self.samples_written + 1) % 15 == 10:
+                # No match.
+                new_partitions = ["USA/NV/Las Vegas"]
 
             if new_partitions is not None:
                 publisher_qos = self.publisher.qos

@@ -25,11 +25,12 @@ static int shutdown_participant(
         const char *shutdown_message,
         int status);
 
-unsigned int process_data(partitionsDataReader *typed_reader)
+unsigned int process_data(TemperatureDataReader *typed_reader)
 {
-    partitionsSeq data_seq;
+    TemperatureSeq data_seq;
     DDS_SampleInfoSeq info_seq;
     unsigned int samples_read = 0;
+    struct DDS_PublicationBuiltinTopicData pub_data;
 
     typed_reader->take(
             data_seq,
@@ -44,7 +45,17 @@ unsigned int process_data(partitionsDataReader *typed_reader)
             if (info_seq[i].view_state == DDS_NEW_VIEW_STATE) {
                 std::cout << "Found new instance\n";
             }
-            partitionsTypeSupport::print_data(&data_seq[i]);
+            TemperatureTypeSupport::print_data(&data_seq[i]);
+
+            typed_reader->get_matched_publication_data(
+                    pub_data,
+                    info_seq[i].publication_handle);
+
+            std::cout << "Received from publisher with partition(s): ";
+            for (int j = 0; j <  pub_data.partition.name.length(); j++) {
+                std::cout << "'" << pub_data.partition.name[j] << "' ";
+            }
+            std::cout << std::endl;
             samples_read++;
         }
     }
@@ -93,8 +104,8 @@ int run_subscriber_application(
      */
     /*
     subscriber_qos.partition.name.ensure_length(2, 2);
-    subscriber_qos.partition.name[0] = DDS_String_dup("ABC");
-    subscriber_qos.partition.name[1] = DDS_String_dup("X*Z");
+    subscriber_qos.partition.name[0] = DDS_String_dup("USA/CA/Sunnyvale");
+    subscriber_qos.partition.name[1] = DDS_String_dup("USA/NV/Reno");
 
     DDSSubscriber *subscriber = participant->create_subscriber(
                                                 subscriber_qos,
@@ -124,8 +135,8 @@ int run_subscriber_application(
 
 
     // Register the datatype to use when creating the Topic
-    const char *type_name = partitionsTypeSupport::get_type_name();
-    retcode = partitionsTypeSupport::register_type(participant, type_name);
+    const char *type_name = TemperatureTypeSupport::get_type_name();
+    retcode = TemperatureTypeSupport::register_type(participant, type_name);
     if (retcode != DDS_RETCODE_OK) {
         return shutdown_participant(
                 participant,
@@ -190,8 +201,8 @@ int run_subscriber_application(
                 EXIT_FAILURE);
     }
 
-    partitionsDataReader *typed_reader =
-            partitionsDataReader::narrow(untyped_reader);
+    TemperatureDataReader *typed_reader =
+            TemperatureDataReader::narrow(untyped_reader);
     if (typed_reader == NULL) {
         return shutdown_participant(
                 participant,
